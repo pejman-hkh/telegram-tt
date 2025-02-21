@@ -3,6 +3,117 @@
   text-align: left;
   overflow: hidden;
 
+  #Folders_wrapper {
+
+    @media (max-width: 926px) {
+      display: none;
+    }
+
+    .animated-menu-icon,
+    .animated-menu-icon::before,
+    .animated-menu-icon::after {
+      width: 1.625rem;
+      height: 0.135rem;
+    }
+
+    .animated-menu-icon::before {
+      top: -0.5rem;
+    }
+
+    .DropdownMenu.main-menu {
+      margin: 1rem auto;
+    }
+
+    .animated-menu-icon::after {
+      top: 0.5rem;
+    }
+
+    .TabList {
+      .Tab {
+        width: 100%;
+        position: relative;
+        margin-bottom: 1rem;
+
+        .Tab_icon .badge {
+          position: absolute;
+          right: -.5rem;
+          background: var(--color-primary) !important;
+        }
+
+        flex: 0 1 auto;
+        flex-direction: column;
+        align-items: center;
+
+        .Tab_icon {
+          position: relative;
+          color: var(--color-text-secondary);
+        }
+      }
+
+      flex-direction: column;
+      box-shadow: none;
+      background-color: #212121;
+      justify-content: flex-start;
+      display: flex;
+    }
+
+    background-color: #212121;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .animated-menu-icon {
+    position: absolute;
+
+    &,
+    &::before,
+    &::after {
+      width: 1.125rem;
+      height: 0.125rem;
+      border-radius: 0.125rem;
+      background-color: var(--color-text-secondary);
+      transition: transform 0.25s;
+      transform: rotate(0);
+    }
+
+    &::before,
+    &::after {
+      position: absolute;
+      left: 0;
+      content: "";
+    }
+
+    &::before {
+      top: -0.3125rem;
+    }
+
+    &::after {
+      top: 0.3125rem;
+    }
+
+    &.state-back {
+      transform: rotate(180deg);
+
+      &::before {
+        transform: rotate(45deg) scaleX(0.75) translate(0.375rem, -0.1875rem);
+      }
+
+      &::after {
+        transform: rotate(-45deg) scaleX(0.75) translate(0.375rem, 0.1875rem);
+      }
+    }
+
+    &.no-animation {
+      transition: none;
+
+      &::before,
+      &::after {
+        transition: none;
+      }
+    }
+  }
+
   @media (min-width: 1276px) {
     position: relative;
   }
@@ -21,7 +132,9 @@
 .has-call-header {
   --call-header-height: 2rem;
 
-  #LeftColumn, #MiddleColumn, #RightColumn-wrapper {
+  #LeftColumn,
+  #MiddleColumn,
+  #RightColumn-wrapper {
     height: calc(100% - var(--call-header-height));
     margin-top: var(--call-header-height);
   }
@@ -195,6 +308,18 @@
 
     &:after {
       transition: none;
+    }
+  }
+}
+
+#Main_wrapper {
+  display: flex;
+}
+
+.ChatFolders {
+  .TabList {
+    @media (min-width: 926px) {
+      display: none;
     }
   }
 }
