@@ -1,4 +1,4 @@
-import type { FC } from '../../../lib/teact/teact';
+import type { FC, StateHookSetter } from '../../../lib/teact/teact';
 import React, {
   memo, useEffect, useRef, useState,
 } from '../../../lib/teact/teact';
@@ -30,6 +30,7 @@ import './LeftMain.scss';
 
 type OwnProps = {
   content: LeftColumnContent;
+  setContent: StateHookSetter<LeftColumnContent>,
   searchQuery?: string;
   searchDate?: number;
   contactsFilter: string;
@@ -53,6 +54,7 @@ let closeTimeout: number | undefined;
 
 const LeftMain: FC<OwnProps> = ({
   content,
+  setContent,
   searchQuery,
   searchDate,
   isClosingSearch,
@@ -170,14 +172,13 @@ const LeftMain: FC<OwnProps> = ({
       onMouseEnter={!IS_TOUCH_ENV ? handleMouseEnter : undefined}
       onMouseLeave={!IS_TOUCH_ENV ? handleMouseLeave : undefined}
     >
+
       <LeftMainHeader
         shouldHideSearch={isForumPanelVisible}
         content={content}
+        setContent={setContent}
         contactsFilter={contactsFilter}
         onSearchQuery={onSearchQuery}
-        onSelectSettings={handleSelectSettings}
-        onSelectContacts={handleSelectContacts}
-        onSelectArchived={handleSelectArchived}
         onReset={onReset}
         shouldSkipTransition={shouldSkipTransition}
         isClosingSearch={isClosingSearch}
