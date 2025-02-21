@@ -32,13 +32,15 @@ import StoryRibbon from '../../story/StoryRibbon';
 import TabList from '../../ui/TabList';
 import Transition from '../../ui/Transition';
 import ChatList from './ChatList';
+import { BotIcon, ChannelIcon, ChatIcon, ContactIcon, FolderIcon, GroupIcon } from '../../common/icons/folder';
 
 type OwnProps = {
-  onSettingsScreenSelect: (screen: SettingsScreens) => void;
-  foldersDispatch: FolderEditDispatch;
-  onLeftColumnContentChange: (content: LeftColumnContent) => void;
+  onSettingsScreenSelect?: (screen: SettingsScreens) => void;
+  foldersDispatch?: FolderEditDispatch;
+  onLeftColumnContentChange?: (content: LeftColumnContent) => void;
   shouldHideFolderTabs?: boolean;
   isForumPanelOpen?: boolean;
+  justTabs?: boolean
 };
 
 type StateProps = {
@@ -81,6 +83,7 @@ const ChatFolders: FC<OwnProps & StateProps> = ({
   archiveSettings,
   isStoryRibbonShown,
   sessions,
+  justTabs
 }) => {
   const {
     loadChatFolders,
@@ -98,6 +101,9 @@ const ChatFolders: FC<OwnProps & StateProps> = ({
   const lang = useLang();
 
   useEffect(() => {
+    if (!justTabs) {
+      return
+    }
     loadChatFolders();
   }, []);
 
@@ -138,6 +144,7 @@ const ChatFolders: FC<OwnProps & StateProps> = ({
   const isInFirstFolder = FIRST_FOLDER_INDEX === activeChatFolder;
 
   const folderCountersById = useFolderManagerForUnreadCounters();
+
   const folderTabs = useMemo(() => {
     if (!displayedFolders || !displayedFolders.length) {
       return undefined;
@@ -196,8 +203,25 @@ const ChatFolders: FC<OwnProps & StateProps> = ({
         });
       }
 
+      const renderIcon = () => {
+        if (folder?.id === ALL_FOLDER_ID) return ChatIcon();
+        switch (true) {
+          case !!folder?.bots:
+            return GroupIcon()
+          case !!folder?.groups:
+            return GroupIcon()
+          case !!folder?.contacts:
+            return ContactIcon()
+          case !!folder?.channels:
+            return ChannelIcon()
+          default:
+            return FolderIcon()
+        }
+      }
+
       return {
         id,
+        icon: renderIcon(),
         title: renderTextWithEntities({
           text: title.text,
           entities: title.entities,
@@ -211,7 +235,7 @@ const ChatFolders: FC<OwnProps & StateProps> = ({
     });
   }, [
     displayedFolders, maxFolders, folderCountersById, lang, chatFoldersById, maxChatLists, folderInvitesById,
-    maxFolderInvites,
+    maxFolderInvites, justTabs
   ]);
 
   const handleSwitchTab = useLastCallback((index: number) => {
@@ -230,6 +254,9 @@ const ChatFolders: FC<OwnProps & StateProps> = ({
   }, [activeChatFolder, folderTabs, setActiveChatFolder]);
 
   useEffect(() => {
+    if (justTabs) {
+      return
+    }
     if (!IS_TOUCH_ENV || !folderTabs?.length || isForumPanelOpen) {
       return undefined;
     }
@@ -256,17 +283,21 @@ const ChatFolders: FC<OwnProps & StateProps> = ({
   const isNotInFirstFolderRef = useRef();
   isNotInFirstFolderRef.current = !isInFirstFolder;
   useEffect(() => (isNotInFirstFolderRef.current ? captureEscKeyListener(() => {
+
     if (isNotInFirstFolderRef.current) {
       setActiveChatFolder({ activeChatFolder: FIRST_FOLDER_INDEX });
     }
   }) : undefined), [activeChatFolder, setActiveChatFolder]);
 
-  useHistoryBack({
-    isActive: !isInFirstFolder,
-    onBack: () => setActiveChatFolder({ activeChatFolder: FIRST_FOLDER_INDEX }, { forceOnHeavyAnimation: true }),
-  });
+  if (justTabs) {
+    useHistoryBack({
+      isActive: !isInFirstFolder,
+      onBack: () => setActiveChatFolder({ activeChatFolder: FIRST_FOLDER_INDEX }, { forceOnHeavyAnimation: true }),
+    });
+  }
 
   useEffect(() => {
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.ctrlKey && e.shiftKey && e.code.startsWith('Digit') && folderTabs) {
         const [, digit] = e.code.match(/Digit(\d)/) || [];
@@ -324,6 +355,24 @@ const ChatFolders: FC<OwnProps & StateProps> = ({
 
   const shouldRenderFolders = folderTabs && folderTabs.length > 1;
 
+  const FolderTabs: FC<{ showIcons: boolean }> = useMemo(() => {
+    return ({ showIcons }) => <> {shouldRenderFolders ? (
+      <TabList
+        contextRootElementSelector="#LeftColumn"
+        tabs={folderTabs}
+        activeTab={activeChatFolder}
+        onSwitchTab={handleSwitchTab}
+        showIcons={showIcons}
+      />
+    ) : shouldRenderPlaceholder ? (
+      <div ref={placeholderRef} className="tabs-placeholder" />
+    ) : undefined}</>
+  }, [folderTabs, shouldRenderPlaceholder, placeholderRef, activeChatFolder])
+
+  if (justTabs) {
+    return <FolderTabs showIcons={true} />
+  }
+
   return (
     <div
       ref={ref}
@@ -334,16 +383,7 @@ const ChatFolders: FC<OwnProps & StateProps> = ({
       )}
     >
       {shouldRenderStoryRibbon && <StoryRibbon isClosing={isStoryRibbonClosing} />}
-      {shouldRenderFolders ? (
-        <TabList
-          contextRootElementSelector="#LeftColumn"
-          tabs={folderTabs}
-          activeTab={activeChatFolder}
-          onSwitchTab={handleSwitchTab}
-        />
-      ) : shouldRenderPlaceholder ? (
-        <div ref={placeholderRef} className="tabs-placeholder" />
-      ) : undefined}
+      <FolderTabs showIcons={false} />
       <Transition
         ref={transitionRef}
         name={shouldSkipHistoryAnimations ? 'none' : lang.isRtl ? 'slideOptimizedRtl' : 'slideOptimized'}
