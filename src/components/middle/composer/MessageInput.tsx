@@ -37,6 +37,7 @@ import Icon from '../../common/icons/Icon';
 import Button from '../../ui/Button';
 import TextTimer from '../../ui/TextTimer';
 import TextFormatter from './TextFormatter.async';
+import TextEditor from './TextEditor';
 
 const CONTEXT_MENU_CLOSE_DELAY_MS = 100;
 // Focus slows down animation, also it breaks transition layout in Chrome
@@ -173,6 +174,7 @@ const MessageInput: FC<OwnProps & StateProps> = ({
   const [isTextFormatterOpen, openTextFormatter, closeTextFormatter] = useFlag();
   const [textFormatterAnchorPosition, setTextFormatterAnchorPosition] = useState<IAnchorPosition>();
   const [selectedRange, setSelectedRange] = useState<Range>();
+  const [onReset, setOnReset] = useState<boolean>();
   const [isTextFormatterDisabled, setIsTextFormatterDisabled] = useState<boolean>(false);
   const { isMobile } = useAppLayout();
   const isMobileDevice = isMobile && (IS_IOS || IS_ANDROID);
@@ -405,11 +407,13 @@ const MessageInput: FC<OwnProps & StateProps> = ({
         e.preventDefault();
 
         closeTextFormatter();
+        setOnReset(!onReset)
         onSend();
       }
     } else if (!isComposing && e.key === 'ArrowUp' && !html && !e.metaKey && !e.ctrlKey && !e.altKey) {
       e.preventDefault();
       editLastMessage();
+      setOnReset(!onReset)
     } else {
       e.target.addEventListener('keyup', processSelectionWithTimeout, { once: true });
     }
@@ -570,7 +574,8 @@ const MessageInput: FC<OwnProps & StateProps> = ({
         onClick={!isAttachmentModalInput && !canSendPlainText ? handleClick : undefined}
       >
         <div className={inputScrollerContentClass}>
-          <div
+
+          <TextEditor
             ref={inputRef}
             id={editableInputId || EDITABLE_INPUT_ID}
             className={className}
@@ -578,6 +583,8 @@ const MessageInput: FC<OwnProps & StateProps> = ({
             role="textbox"
             dir="auto"
             tabIndex={0}
+            onReset={onReset}
+            onUpdate={onUpdate}
             onClick={focusInput}
             onChange={handleChange}
             onKeyDown={handleKeyDown}
@@ -588,6 +595,7 @@ const MessageInput: FC<OwnProps & StateProps> = ({
             onFocus={!isNeedPremium ? onFocus : undefined}
             onBlur={!isNeedPremium ? onBlur : undefined}
           />
+
           {!forcedPlaceholder && (
             <span
               className={buildClassName(
