@@ -17,6 +17,7 @@ import './TabList.scss';
 
 export type TabWithProperties = {
   id?: number;
+  icon?: TeactNode
   title: TeactNode;
   badgeCount?: number;
   isBlocked?: boolean;
@@ -26,6 +27,7 @@ export type TabWithProperties = {
 
 type OwnProps = {
   tabs: readonly TabWithProperties[];
+  showIcons?: boolean,
   activeTab: number;
   className?: string;
   tabClassName?: string;
@@ -38,7 +40,7 @@ const TAB_SCROLL_THRESHOLD_PX = 16;
 const SCROLL_DURATION = IS_IOS ? 450 : IS_ANDROID ? 400 : 300;
 
 const TabList: FC<OwnProps> = ({
-  tabs, activeTab, onSwitchTab,
+  tabs, showIcons, activeTab, onSwitchTab,
   contextRootElementSelector, className, tabClassName,
 }) => {
   // eslint-disable-next-line no-null/no-null
@@ -83,6 +85,8 @@ const TabList: FC<OwnProps> = ({
         <Tab
           key={tab.id}
           title={tab.title}
+          icon={tab.icon}
+          showIcons={showIcons}
           isActive={i === activeTab}
           isBlocked={tab.isBlocked}
           badgeCount={tab.badgeCount}
