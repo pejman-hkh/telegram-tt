@@ -32,6 +32,8 @@ type OwnProps = {
   clickArg?: number;
   contextActions?: MenuItemContextAction[];
   contextRootElementSelector?: string;
+  icon?: TeactNode | undefined;
+  showIcons?: boolean;
 };
 
 const classNames = {
@@ -42,6 +44,8 @@ const classNames = {
 const Tab: FC<OwnProps> = ({
   className,
   title,
+  icon,
+  showIcons,
   isActive,
   isBlocked,
   badgeCount,
@@ -52,6 +56,10 @@ const Tab: FC<OwnProps> = ({
   contextActions,
   contextRootElementSelector,
 }) => {
+  if (!showIcons) {
+    icon = undefined
+  }
+
   // eslint-disable-next-line no-null/no-null
   const tabRef = useRef<HTMLDivElement>(null);
 
@@ -139,9 +147,14 @@ const Tab: FC<OwnProps> = ({
       onContextMenu={handleContextMenu}
       ref={tabRef}
     >
+      {icon && <span className="Tab_icon">
+        {icon}
+        {Boolean(badgeCount) && <span className={buildClassName('badge', isBadgeActive && classNames.badgeActive)}>{badgeCount}</span>}
+      </span>}
+
       <span className="Tab_inner">
         {typeof title === 'string' ? renderText(title) : title}
-        {Boolean(badgeCount) && (
+        {!icon && Boolean(badgeCount) && (
           <span className={buildClassName('badge', isBadgeActive && classNames.badgeActive)}>{badgeCount}</span>
         )}
         {isBlocked && <Icon name="lock-badge" className="blocked" />}
