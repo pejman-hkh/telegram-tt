@@ -1,8 +1,8 @@
 import type { RefObject } from 'react';
+import { getActions, withGlobal } from '../../global';
 import React, {
   memo, useEffect, useMemo, useState,
 } from '../../lib/teact/teact';
-import { getActions, withGlobal } from '../../global';
 
 import type { GlobalState } from '../../global/types';
 import type { FoldersActions } from '../../hooks/reducers/useFoldersReducer';
@@ -13,7 +13,8 @@ import { selectCurrentChat, selectIsForumPanelOpen, selectTabState } from '../..
 import captureEscKeyListener from '../../util/captureEscKeyListener';
 import { captureControlledSwipe } from '../../util/swipeController';
 import {
-  IS_APP, IS_FIREFOX, IS_MAC_OS, IS_TOUCH_ENV, LAYERS_ANIMATION_NAME,
+  IS_APP,
+  IS_FIREFOX, IS_MAC_OS, IS_TOUCH_ENV, LAYERS_ANIMATION_NAME
 } from '../../util/windowEnvironment';
 
 import useFoldersReducer from '../../hooks/reducers/useFoldersReducer';
@@ -30,6 +31,8 @@ import NewChat from './newChat/NewChat.async';
 import Settings from './settings/Settings.async';
 
 import './LeftColumn.scss';
+import ChatFolders from './main/ChatFolders';
+import MainMenu from './main/MainMenu';
 
 interface OwnProps {
   ref: RefObject<HTMLDivElement>;
@@ -52,6 +55,7 @@ type StateProps = {
   isClosingSearch?: boolean;
   archiveSettings: GlobalState['archiveSettings'];
   isArchivedStoryRibbonShown?: boolean;
+  orderedFolderIds?: number[];
 };
 
 enum ContentType {
@@ -86,6 +90,7 @@ function LeftColumn({
   isClosingSearch,
   archiveSettings,
   isArchivedStoryRibbonShown,
+  orderedFolderIds,
 }: OwnProps & StateProps) {
   const {
     setGlobalSearchQuery,
@@ -97,7 +102,12 @@ function LeftColumn({
     clearTwoFaError,
     openChat,
     requestNextSettingsScreen,
+    loadChatFolders,
   } = getActions();
+
+  useEffect(() => {
+    loadChatFolders()
+  }, [])
 
   const [content, setContent] = useState<LeftColumnContent>(LeftColumnContent.ChatList);
   const [settingsScreen, setSettingsScreen] = useState(SettingsScreens.Main);
@@ -526,6 +536,7 @@ function LeftColumn({
         return (
           <LeftMain
             content={content}
+            setContent={setContent}
             isClosingSearch={isClosingSearch}
             searchQuery={searchQuery}
             searchDate={searchDate}
@@ -545,7 +556,20 @@ function LeftColumn({
     }
   }
 
-  return (
+  return (<div id="Main_wrapper">
+    {orderedFolderIds && orderedFolderIds?.length > 1 && <div id="Folders_wrapper">
+      <div>
+        <MainMenu
+          content={content}
+          setContent={setContent}
+          shouldSkipTransition={shouldSkipHistoryAnimations}
+          onReset={handleReset}
+        />
+      </div>
+      <ChatFolders
+        justTabs={true}
+      />
+    </div>}
     <Transition
       ref={ref}
       name={shouldSkipHistoryAnimations ? 'none' : LAYERS_ANIMATION_NAME}
@@ -560,6 +584,7 @@ function LeftColumn({
     >
       {renderContent}
     </Transition>
+  </div>
   );
 }
 
@@ -580,6 +605,9 @@ export default memo(withGlobal<OwnProps>(
       },
     } = tabState;
     const {
+      chatFolders: {
+        orderedIds: orderedFolderIds,
+      },
       currentUserId,
       passcode: {
         hasPasscode,
@@ -595,6 +623,7 @@ export default memo(withGlobal<OwnProps>(
     const forumPanelChatId = tabState.forumPanelChatId;
 
     return {
+      orderedFolderIds,
       searchQuery: query,
       searchDate: minDate,
       isFirstChatFolderActive: activeChatFolder === 0,
