@@ -1,6 +1,6 @@
 import type { FC } from '../../../lib/teact/teact';
 import React, {
-  memo, useEffect, useRef, useState,
+  memo, useCallback, useEffect, useRef, useState,
 } from '../../../lib/teact/teact';
 
 import type { IAnchorPosition } from '../../../types';
@@ -40,6 +40,7 @@ interface ISelectedTextFormats {
   strikethrough?: boolean;
   monospace?: boolean;
   spoiler?: boolean;
+  blockquote?: boolean;
 }
 
 const TEXT_FORMAT_BY_TAG_NAME: Record<string, keyof ISelectedTextFormats> = {
@@ -51,6 +52,7 @@ const TEXT_FORMAT_BY_TAG_NAME: Record<string, keyof ISelectedTextFormats> = {
   DEL: 'strikethrough',
   CODE: 'monospace',
   SPAN: 'spoiler',
+  BLOCKQUOTE: 'blockquote',
 };
 const fragmentEl = document.createElement('div');
 
@@ -318,6 +320,33 @@ const TextFormatter: FC<OwnProps> = ({
     onClose();
   });
 
+  const handleBlockquoteText = useLastCallback(() => {
+    if (selectedTextFormats.blockquote) {
+      const element = getSelectedElement();
+      if (
+        !selectedRange
+        || !element
+        || element.tagName !== 'BLOCKQUOTE'
+        || !element.textContent
+      ) {
+        return;
+      }
+
+      element.replaceWith(element.textContent);
+      setSelectedTextFormats((selectedFormats) => ({
+        ...selectedFormats,
+        blockquote: false,
+      }));
+
+      return;
+    }
+
+    const text = getSelectedText(true);
+
+    document.execCommand('insertHTML', false, `<blockquote class="blockquote" dir="auto">${text}</blockquote>`);
+    onClose();
+  });
+
   const handleLinkUrlConfirm = useLastCallback(() => {
     const formattedLinkUrl = (ensureProtocol(linkUrl) || '').split('%').map(encodeURI).join('%');
 
@@ -464,6 +493,14 @@ const TextFormatter: FC<OwnProps> = ({
           onClick={handleMonospaceText}
         >
           <Icon name="monospace" />
+        </Button>
+        <Button
+          color="translucent"
+          ariaLabel="Quote text"
+          className={getFormatButtonClassName('blockquote')}
+          onClick={handleBlockquoteText}
+        >
+          <Icon name="quote-text" />
         </Button>
         <div className="TextFormatter-divider" />
         <Button color="translucent" ariaLabel={lang('TextFormat.AddLinkTitle')} onClick={openLinkControl}>
