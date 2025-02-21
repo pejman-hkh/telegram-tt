@@ -22,6 +22,11 @@
     white-space: nowrap;
   }
 
+
+  .SearchInput.SearchInput--full {
+    max-width: 100% !important;
+  }
+
   .SearchInput {
     margin-left: 0.625rem;
     max-width: calc(100% - 3.25rem);
@@ -39,7 +44,7 @@
     width: 2.5rem;
     height: 2.5rem;
 
-    + .DropdownMenu {
+    +.DropdownMenu {
       margin-left: 0.25rem;
     }
   }
