@@ -333,7 +333,7 @@ const TextFormatter: FC<OwnProps> = ({
 
   const handleBlockquoteText = useLastCallback(() => {
     const mainElement = getSelectedMainElement('BLOCKQUOTE')
-   
+
     if (mainElement?.tagName == "BLOCKQUOTE") {
       const element = mainElement
       if (
@@ -346,7 +346,17 @@ const TextFormatter: FC<OwnProps> = ({
       }
 
       element.replaceWith(...element.childNodes);
- 
+
+      //should say to editable input that input happened
+      const div = document.getElementById(EDITABLE_INPUT_ID) as HTMLDivElement
+      const event = new Event('input', { bubbles: true, cancelable: true });
+      div.dispatchEvent(event);
+
+      setSelectedTextFormats((selectedFormats) => ({
+        ...selectedFormats,
+        blockquote: false,
+      }));
+
       return;
     }
 
