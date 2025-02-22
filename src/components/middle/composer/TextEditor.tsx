@@ -84,7 +84,7 @@ const TextEditor: FC<OwnProps | any> = ({ ref, onKeyDown, onChange, onUpdate, on
         if (!editorRef.current) return;
         const content = editorRef.current.innerHTML.replace('&nbsp;', ' ');
 
-        if (content !== history[index]?.text) {
+        if (content !== history[index]?.content) {
             const caretPosition = getCaretPosition(editorRef.current!)
             setHistory((prev: History[]) => [...prev.slice(0, index + 1), { content: content, text: editorRef.current?.textContent || "", caretPosition }]);
             setIndex(index + 1);
