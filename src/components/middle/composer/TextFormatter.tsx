@@ -320,9 +320,22 @@ const TextFormatter: FC<OwnProps> = ({
     onClose();
   });
 
+  const getSelectedMainElement = useLastCallback((tagName: string) => {
+    const selection = document.getSelection();
+    let element = selection?.anchorNode?.parentElement;
+
+    while (element && element.tagName !== tagName && element.id !== EDITABLE_INPUT_ID) {
+      element = element.parentElement;
+    }
+
+    return element
+  })
+
   const handleBlockquoteText = useLastCallback(() => {
-    if (selectedTextFormats.blockquote) {
-      const element = getSelectedElement();
+    const mainElement = getSelectedMainElement('BLOCKQUOTE')
+   
+    if (mainElement?.tagName == "BLOCKQUOTE") {
+      const element = mainElement
       if (
         !selectedRange
         || !element
@@ -332,12 +345,8 @@ const TextFormatter: FC<OwnProps> = ({
         return;
       }
 
-      element.replaceWith(element.textContent);
-      setSelectedTextFormats((selectedFormats) => ({
-        ...selectedFormats,
-        blockquote: false,
-      }));
-
+      element.replaceWith(...element.childNodes);
+ 
       return;
     }
 
