@@ -20,6 +20,9 @@ import { captureEvents, SwipeDirection } from '../../../util/captureEvents';
 import { MEMO_EMPTY_ARRAY } from '../../../util/memo';
 import { IS_TOUCH_ENV } from '../../../util/windowEnvironment';
 import { renderTextWithEntities } from '../../common/helpers/renderTextWithEntities';
+import {
+  BotIcon, ChannelIcon, ChatIcon, ContactIcon, FolderIcon, GroupIcon,
+} from '../../common/icons/folder';
 
 import useDerivedState from '../../../hooks/useDerivedState';
 import { useFolderManagerForUnreadCounters } from '../../../hooks/useFolderManager';
@@ -32,7 +35,6 @@ import StoryRibbon from '../../story/StoryRibbon';
 import TabList from '../../ui/TabList';
 import Transition from '../../ui/Transition';
 import ChatList from './ChatList';
-import { BotIcon, ChannelIcon, ChatIcon, ContactIcon, FolderIcon, GroupIcon } from '../../common/icons/folder';
 
 type OwnProps = {
   onSettingsScreenSelect?: (screen: SettingsScreens) => void;
@@ -40,7 +42,7 @@ type OwnProps = {
   onLeftColumnContentChange?: (content: LeftColumnContent) => void;
   shouldHideFolderTabs?: boolean;
   isForumPanelOpen?: boolean;
-  justTabs?: boolean
+  justTabs?: boolean;
 };
 
 type StateProps = {
@@ -83,7 +85,7 @@ const ChatFolders: FC<OwnProps & StateProps> = ({
   archiveSettings,
   isStoryRibbonShown,
   sessions,
-  justTabs
+  justTabs,
 }) => {
   const {
     loadChatFolders,
@@ -102,10 +104,10 @@ const ChatFolders: FC<OwnProps & StateProps> = ({
 
   useEffect(() => {
     if (!justTabs) {
-      return
+      return;
     }
     loadChatFolders();
-  }, []);
+  }, [justTabs]);
 
   const {
     ref,
@@ -207,17 +209,17 @@ const ChatFolders: FC<OwnProps & StateProps> = ({
         if (folder?.id === ALL_FOLDER_ID) return ChatIcon();
         switch (true) {
           case !!folder?.bots:
-            return GroupIcon()
+            return BotIcon();
           case !!folder?.groups:
-            return GroupIcon()
+            return GroupIcon();
           case !!folder?.contacts:
-            return ContactIcon()
+            return ContactIcon();
           case !!folder?.channels:
-            return ChannelIcon()
+            return ChannelIcon();
           default:
-            return FolderIcon()
+            return FolderIcon();
         }
-      }
+      };
 
       return {
         id,
@@ -235,7 +237,7 @@ const ChatFolders: FC<OwnProps & StateProps> = ({
     });
   }, [
     displayedFolders, maxFolders, folderCountersById, lang, chatFoldersById, maxChatLists, folderInvitesById,
-    maxFolderInvites, justTabs
+    maxFolderInvites,
   ]);
 
   const handleSwitchTab = useLastCallback((index: number) => {
@@ -255,15 +257,16 @@ const ChatFolders: FC<OwnProps & StateProps> = ({
 
   useEffect(() => {
     if (justTabs) {
-      return
+      return;
     }
     if (!IS_TOUCH_ENV || !folderTabs?.length || isForumPanelOpen) {
-      return undefined;
+      return;
     }
 
+    // eslint-disable-next-line consistent-return
     return captureEvents(transitionRef.current!, {
       selectorToPreventScroll: '.chat-list',
-      onSwipe: ((e, direction) => {
+      onSwipe: ((_e, direction) => {
         if (direction === SwipeDirection.Left) {
           setActiveChatFolder(
             { activeChatFolder: Math.min(activeChatFolder + 1, folderTabs.length - 1) },
@@ -278,26 +281,22 @@ const ChatFolders: FC<OwnProps & StateProps> = ({
         return false;
       }),
     });
-  }, [activeChatFolder, folderTabs, isForumPanelOpen, setActiveChatFolder]);
+  }, [activeChatFolder, folderTabs, isForumPanelOpen, setActiveChatFolder, justTabs]);
 
   const isNotInFirstFolderRef = useRef();
   isNotInFirstFolderRef.current = !isInFirstFolder;
   useEffect(() => (isNotInFirstFolderRef.current ? captureEscKeyListener(() => {
-
     if (isNotInFirstFolderRef.current) {
       setActiveChatFolder({ activeChatFolder: FIRST_FOLDER_INDEX });
     }
   }) : undefined), [activeChatFolder, setActiveChatFolder]);
 
-  if (justTabs) {
-    useHistoryBack({
-      isActive: !isInFirstFolder,
-      onBack: () => setActiveChatFolder({ activeChatFolder: FIRST_FOLDER_INDEX }, { forceOnHeavyAnimation: true }),
-    });
-  }
+  useHistoryBack({
+    isActive: !isInFirstFolder,
+    onBack: () => setActiveChatFolder({ activeChatFolder: FIRST_FOLDER_INDEX }, { forceOnHeavyAnimation: true }),
+  });
 
   useEffect(() => {
-
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.ctrlKey && e.shiftKey && e.code.startsWith('Digit') && folderTabs) {
         const [, digit] = e.code.match(/Digit(\d)/) || [];
@@ -356,21 +355,24 @@ const ChatFolders: FC<OwnProps & StateProps> = ({
   const shouldRenderFolders = folderTabs && folderTabs.length > 1;
 
   const FolderTabs: FC<{ showIcons: boolean }> = useMemo(() => {
-    return ({ showIcons }) => <> {shouldRenderFolders ? (
-      <TabList
-        contextRootElementSelector="#LeftColumn"
-        tabs={folderTabs}
-        activeTab={activeChatFolder}
-        onSwitchTab={handleSwitchTab}
-        showIcons={showIcons}
-      />
-    ) : shouldRenderPlaceholder ? (
-      <div ref={placeholderRef} className="tabs-placeholder" />
-    ) : undefined}</>
-  }, [folderTabs, shouldRenderPlaceholder, placeholderRef, activeChatFolder])
+    return ({ showIcons }) => (
+      <> {shouldRenderFolders ? (
+        <TabList
+          contextRootElementSelector="#LeftColumn"
+          tabs={folderTabs}
+          activeTab={activeChatFolder}
+          onSwitchTab={handleSwitchTab}
+          showIcons={showIcons}
+        />
+      ) : shouldRenderPlaceholder ? (
+        <div ref={placeholderRef} className="tabs-placeholder" />
+      ) : undefined}
+      </>
+    );
+  }, [shouldRenderFolders, folderTabs, activeChatFolder, shouldRenderPlaceholder, placeholderRef]);
 
   if (justTabs) {
-    return <FolderTabs showIcons={true} />
+    return <FolderTabs showIcons />;
   }
 
   return (

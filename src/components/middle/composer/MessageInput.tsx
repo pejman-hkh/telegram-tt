@@ -36,8 +36,8 @@ import useInputCustomEmojis from './hooks/useInputCustomEmojis';
 import Icon from '../../common/icons/Icon';
 import Button from '../../ui/Button';
 import TextTimer from '../../ui/TextTimer';
-import TextFormatter from './TextFormatter.async';
 import TextEditor from './TextEditor';
+import TextFormatter from './TextFormatter.async';
 
 const CONTEXT_MENU_CLOSE_DELAY_MS = 100;
 // Focus slows down animation, also it breaks transition layout in Chrome
@@ -407,13 +407,13 @@ const MessageInput: FC<OwnProps & StateProps> = ({
         e.preventDefault();
 
         closeTextFormatter();
-        setOnReset(!onReset)
+        setOnReset(!onReset);
         onSend();
       }
     } else if (!isComposing && e.key === 'ArrowUp' && !html && !e.metaKey && !e.ctrlKey && !e.altKey) {
       e.preventDefault();
       editLastMessage();
-      setOnReset(!onReset)
+      setOnReset(!onReset);
     } else {
       e.target.addEventListener('keyup', processSelectionWithTimeout, { once: true });
     }

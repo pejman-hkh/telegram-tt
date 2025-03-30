@@ -114,7 +114,8 @@ function parseMarkdown(html: string) {
   //   '<img alt="$1" data-document-id="$2">',
   // );
   if (DEBUG) {
-    console.log("befor markdown parser: ", parsedHtml)
+    // eslint-disable-next-line no-console
+    console.log('befor markdown parser: ', parsedHtml);
   }
   // Other simple markdown
   // parsedHtml = parsedHtml.replace(
@@ -134,13 +135,13 @@ function parseMarkdown(html: string) {
   //   `<span data-entity-type="${ApiMessageEntityTypes.Spoiler}">$2</span>`,
   // );
 
-
-  parsedHtml = markdowToHtml(parsedHtml)
+  parsedHtml = markdowToHtml(parsedHtml);
 
   if (DEBUG) {
-    console.log("after markdown parser: ", parsedHtml)
+    // eslint-disable-next-line no-console
+    console.log(`after markdown parser: ${parsedHtml}`);
   }
-  
+
   return parsedHtml;
 }
 

@@ -1,6 +1,6 @@
 import type { FC } from '../../../lib/teact/teact';
 import React, {
-  memo, useCallback, useEffect, useRef, useState,
+  memo, useEffect, useRef, useState,
 } from '../../../lib/teact/teact';
 
 import type { IAnchorPosition } from '../../../types';
@@ -328,14 +328,14 @@ const TextFormatter: FC<OwnProps> = ({
       element = element.parentElement;
     }
 
-    return element
-  })
+    return element;
+  });
 
   const handleBlockquoteText = useLastCallback(() => {
-    const mainElement = getSelectedMainElement('BLOCKQUOTE')
+    const mainElement = getSelectedMainElement('BLOCKQUOTE');
 
-    if (mainElement?.tagName == "BLOCKQUOTE") {
-      const element = mainElement
+    if (mainElement?.tagName === 'BLOCKQUOTE') {
+      const element = mainElement;
       if (
         !selectedRange
         || !element
@@ -347,8 +347,8 @@ const TextFormatter: FC<OwnProps> = ({
 
       element.replaceWith(...element.childNodes);
 
-      //should say to editable input that input happened
-      const div = document.getElementById(EDITABLE_INPUT_ID) as HTMLDivElement
+      // Should say to editable input that input happened
+      const div = document.getElementById(EDITABLE_INPUT_ID) as HTMLDivElement;
       const event = new Event('input', { bubbles: true, cancelable: true });
       div.dispatchEvent(event);
 
