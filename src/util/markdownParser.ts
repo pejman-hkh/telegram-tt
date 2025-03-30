@@ -320,9 +320,9 @@ export class ParseMarkdown {
             node.attrs.href = `mailto:${href}`;
           }
 
-          let match;
+          const match = node?.attrs?.href?.match(/customEmoji:(\d+)/);
           // eslint-disable-next-line no-cond-assign
-          if (match = node?.attrs?.href?.match(/customEmoji:(\d+)/)) {
+          if (match) {
             node.type = 'img';
             node.attrs = { alt: content, 'data-document-id': match[1] };
           }

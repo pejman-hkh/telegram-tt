@@ -350,7 +350,7 @@ const MessageInput: FC<OwnProps & StateProps> = ({
     selectionTimeoutRef.current = window.setTimeout(processSelection, SELECTION_RECALCULATE_DELAY_MS);
   }
 
-  function handleMouseDown(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+  const handleMouseDown = useLastCallback((e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     if (e.button !== 2) {
       const listenerEl = e.currentTarget.closest(`.${INPUT_WRAPPER_CLASS}`) || e.target;
 
@@ -379,9 +379,9 @@ const MessageInput: FC<OwnProps & StateProps> = ({
 
     document.addEventListener('mousedown', handleCloseContextMenu);
     document.addEventListener('keydown', handleCloseContextMenu);
-  }
+  });
 
-  function handleKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
+  const handleKeyDown = useLastCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
     // https://levelup.gitconnected.com/javascript-events-handlers-keyboard-and-load-events-1b3e46a6b0c3#1960
     const { isComposing } = e;
 
@@ -417,9 +417,9 @@ const MessageInput: FC<OwnProps & StateProps> = ({
     } else {
       e.target.addEventListener('keyup', processSelectionWithTimeout, { once: true });
     }
-  }
+  });
 
-  function handleChange(e: ChangeEvent<HTMLDivElement>) {
+  const handleChange = useLastCallback((e: ChangeEvent<HTMLDivElement>) => {
     const { innerHTML, textContent } = e.currentTarget;
 
     onUpdate(innerHTML === SAFARI_BR ? '' : innerHTML);
@@ -439,7 +439,7 @@ const MessageInput: FC<OwnProps & StateProps> = ({
         focusEditableElement(inputRef.current!, true);
       }
     }
-  }
+  });
 
   function handleAndroidContextMenu(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
     if (!checkSelection()) {
