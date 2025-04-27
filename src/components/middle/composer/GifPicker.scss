@@ -1,18 +1,33 @@
+.GifWrapper {
+  overflow-y: auto;
+  width: 100%;
+  height: 100%;
+  padding: 0.5rem;
+  .GifSearch {
+    height: calc(100% - 3rem);
+  }
+}
+
 .GifPicker {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  grid-auto-rows: 6.25rem;
+  grid-auto-rows: minmax(auto, 6.25rem);
   grid-gap: 0.125rem;
   grid-auto-flow: dense;
-  height: calc(100% - 0.1875rem);
-  overflow-y: auto;
+  // overflow-y: auto;
   margin: 0 0.1875rem;
   padding-bottom: 0.1875rem;
   border-radius: 1.125rem 1.125rem 0 0;
-  position: relative;
+  // position: relative;
   top: 0.1875rem;
 
-  .Loading, .picker-disabled {
+  .Search {
+    grid-column: 1 / -1;
+    justify-content: center;
+  }
+
+  .Loading,
+  .picker-disabled {
     position: absolute;
     top: 0;
     bottom: 0;
