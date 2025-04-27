@@ -22,7 +22,7 @@ export default function useGetSelectionRange(inputSelector: string) {
       const element = commonAncestorContainer instanceof Element
         ? commonAncestorContainer
         : commonAncestorContainer.parentElement!;
-      if (element.closest(inputSelector)) {
+      if (element?.closest(inputSelector)) {
         setRange(range);
       }
     }
