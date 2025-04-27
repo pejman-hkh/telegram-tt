@@ -44,7 +44,7 @@ export interface ApiPhoto {
 }
 
 export interface ApiSticker {
-  mediaType: 'sticker';
+  mediaType: 'sticker' | 'emoji';
   id: string;
   stickerSetInfo: ApiStickerSetInfo;
   emoji?: string;
@@ -489,9 +489,9 @@ export interface ApiStoryForwardInfo {
 
 export type ApiMessageEntityDefault = {
   type: Exclude<
-  `${ApiMessageEntityTypes}`,
-  `${ApiMessageEntityTypes.Pre}` | `${ApiMessageEntityTypes.TextUrl}` | `${ApiMessageEntityTypes.MentionName}` |
-  `${ApiMessageEntityTypes.CustomEmoji}` | `${ApiMessageEntityTypes.Blockquote}`
+    `${ApiMessageEntityTypes}`,
+    `${ApiMessageEntityTypes.Pre}` | `${ApiMessageEntityTypes.TextUrl}` | `${ApiMessageEntityTypes.MentionName}` |
+    `${ApiMessageEntityTypes.CustomEmoji}` | `${ApiMessageEntityTypes.Blockquote}`
   >;
   offset: number;
   length: number;
@@ -533,7 +533,7 @@ export type ApiMessageEntityCustomEmoji = {
 };
 
 export type ApiMessageEntity = ApiMessageEntityDefault | ApiMessageEntityPre | ApiMessageEntityTextUrl |
-ApiMessageEntityMentionName | ApiMessageEntityCustomEmoji | ApiMessageEntityBlockquote;
+  ApiMessageEntityMentionName | ApiMessageEntityCustomEmoji | ApiMessageEntityBlockquote;
 
 export enum ApiMessageEntityTypes {
   Bold = 'MessageEntityBold',
@@ -910,7 +910,7 @@ export type ApiGlobalMessageSearchType = 'text' | 'channels' | 'media' | 'docume
 export type ApiMessageSearchContext = 'all' | 'users' | 'groups' | 'channels';
 
 export type ApiReportReason = 'spam' | 'violence' | 'pornography' | 'childAbuse'
-| 'copyright' | 'geoIrrelevant' | 'fake' | 'illegalDrugs' | 'personalDetails' | 'other';
+  | 'copyright' | 'geoIrrelevant' | 'fake' | 'illegalDrugs' | 'personalDetails' | 'other';
 
 export type ApiSendMessageAction = {
   type: 'cancel' | 'typing' | 'recordAudio' | 'chooseSticker' | 'playingGame';
