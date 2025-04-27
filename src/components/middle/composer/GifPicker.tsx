@@ -1,6 +1,7 @@
 import type { FC } from '../../../lib/teact/teact';
 import React, {
   memo, useEffect, useRef,
+  useState,
 } from '../../../lib/teact/teact';
 import { getActions, withGlobal } from '../../../global';
 
@@ -16,7 +17,9 @@ import useLastCallback from '../../../hooks/useLastCallback';
 import useAsyncRendering from '../../right/hooks/useAsyncRendering';
 
 import GifButton from '../../common/GifButton';
+import GifSearch from '../../right/GifSearch';
 import Loading from '../../ui/Loading';
+import SymbolSearch, { SYMBOL_SEARCH_IS_DEFAULT } from './SymbolSearch';
 
 import './GifPicker.scss';
 
@@ -42,10 +45,11 @@ const GifPicker: FC<OwnProps & StateProps> = ({
   isSavedMessages,
   onGifSelect,
 }) => {
-  const { loadSavedGifs, saveGif } = getActions();
+  const { loadSavedGifs, saveGif, setGifSearchQuery } = getActions();
 
   // eslint-disable-next-line no-null/no-null
   const containerRef = useRef<HTMLDivElement>(null);
+  const [isSearching, setIsSearching] = useState<number>(SYMBOL_SEARCH_IS_DEFAULT);
 
   const {
     observe: observeIntersection,
@@ -63,31 +67,48 @@ const GifPicker: FC<OwnProps & StateProps> = ({
 
   const canRenderContents = useAsyncRendering([], SLIDE_TRANSITION_DURATION);
 
+  const handleGifSearch = useLastCallback((text: string[], searching) => {
+    const query = text[0];
+    setIsSearching(searching);
+    setGifSearchQuery({ query });
+  });
+
   return (
     <div>
       <div
         ref={containerRef}
-        className={buildClassName('GifPicker', className, IS_TOUCH_ENV ? 'no-scrollbar' : 'custom-scroll')}
+        className={buildClassName('GifWrapper', className, (IS_TOUCH_ENV || isSearching)
+          ? 'no-scrollbar'
+          : 'custom-scroll')}
       >
-        {!canSendGifs ? (
-          <div className="picker-disabled">Sending GIFs is not allowed in this chat.</div>
-        ) : canRenderContents && savedGifs && savedGifs.length ? (
-          savedGifs.map((gif) => (
-            <GifButton
-              key={gif.id}
-              gif={gif}
-              observeIntersection={observeIntersection}
-              isDisabled={!loadAndPlay}
-              onClick={canSendGifs ? onGifSelect : undefined}
-              onUnsaveClick={handleUnsaveClick}
-              isSavedMessages={isSavedMessages}
-            />
-          ))
-        ) : canRenderContents && savedGifs ? (
-          <div className="picker-disabled">No saved GIFs.</div>
-        ) : (
-          <Loading />
+        <SymbolSearch
+          onSearch={handleGifSearch}
+          placeholder="SearchGifsTitle"
+        />
+        {isSearching !== SYMBOL_SEARCH_IS_DEFAULT && (
+          <GifSearch />
         )}
+        <div className={buildClassName('GifPicker', isSearching ? 'not-shown' : '')}>
+          {!canSendGifs ? (
+            <div className="picker-disabled">Sending GIFs is not allowed in this chat.</div>
+          ) : canRenderContents && savedGifs && savedGifs.length ? (
+            savedGifs.map((gif) => (
+              <GifButton
+                key={gif.id}
+                gif={gif}
+                observeIntersection={observeIntersection}
+                isDisabled={!loadAndPlay}
+                onClick={canSendGifs ? onGifSelect : undefined}
+                onUnsaveClick={handleUnsaveClick}
+                isSavedMessages={isSavedMessages}
+              />
+            ))
+          ) : canRenderContents && savedGifs ? (
+            <div className="picker-disabled">No saved GIFs.</div>
+          ) : (
+            <Loading />
+          )}
+        </div>
       </div>
     </div>
   );
