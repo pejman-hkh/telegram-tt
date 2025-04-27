@@ -1,25 +1,17 @@
-1. **Markdown Parser Implementation**  
-- Implemented a recursive parsing approach for handling nested Markdown syntax.  
-- Fully implemented Telegram-specific syntax, including custom handling for Blockquote with "^^".
-- For example, you can use **bold**, __italic__, `code`, ~~del~~, and ||spoiler|| inside a blockquote as shown below:
+To implement Markdown, I tried to make editing possible in a nested way as well.
+I also added Markdown support for quotes, so with the nested structure of the Markdown parser and the editor implementation, it’s easy to insert text like bold, code, etc., inside a quote.
+By modifying the spoiler tag, I also allowed editing it inside the editor.
 
-^^ **bold** __italic__ `code` ~~del~~ ||spoiler|| ^^
+One of the challenges I faced was handling code blocks:
+if Markdown like bold appears inside the code, it should not render as bold instantly — it should display the raw result instead.
+However, for code blocks, I didn’t have enough time to complete the implementation for detecting and editing the code type specified on the first line.
+So I commented that part out.
+There wasn't an issue with my implementation, but when the cursor was placed before the code and typing started, it would jump unexpectedly.
 
-Similarly, the same formatting can be applied within bold or italic tags. However, if you don't want the nested formatting to be applied, I introduced a `start` and `end` approach. Currently, for `code`, it doesn't apply bold or italic formatting inside the code block.
+I tried to make everything very smooth, making it easy to enter and exit tags.
+To prevent breaking the TextFormatter and to avoid heavy modifications, I deselected the tag during selection and re-selected only the targeted part afterward, so there wouldn’t be conflicts with the TextFormatter.
 
-2. **Undo (Ctrl+Z) Implementation**  
-- Developed a history tracking system to maintain typing history.  
-- Implemented a word-by-word undo functionality similar to Telegram desktop app.  
-- Handled all types of text changes, including text edits, bold, and other formatting adjustments, ensuring proper undo behavior.
-
-3. **Folder UI Implementation**  
-- Added a new prop to the FolderChat component to dynamically manage tabs.  
-- Created a reusable component for the main menu to ensure it can be used in multiple places in the application.
-
-4. **Quote Formatting and Editing**  
-- Added functionality to handle blockquotes in the text editor.  
-- Solved the issue of typing above or below blockquotes while ensuring proper formatting.
-
-5. **TextEditor Component for Undo and Blockquote Handling**  
-- Developed a new `TextEditor` component to handle undo and blockquote editing.  
-- Ensured smooth integration of the undo feature and proper text editing experience.
+For ESG, I also tried not to touch the CustomEmojiPicker.
+However, I created a Cover component that I used in both places.
+As for the GIF feature, I didn’t have enough time to implement the top navigation bar.
+And honestly, I wasn’t sure exactly how it was supposed to behave.
