@@ -52,9 +52,11 @@ export function selectRightColumnContentKey<T extends GlobalState>(
   ) : tabState.monetizationStatistics ? (
     RightColumnContent.MonetizationStatistics
   ) : tabState.stickerSearch.query !== undefined ? (
-    RightColumnContent.StickerSearch
+    // RightColumnContent.StickerSearch
+    undefined
   ) : tabState.gifSearch.query !== undefined ? (
-    RightColumnContent.GifSearch
+    // RightColumnContent.GifSearch
+    undefined
   ) : tabState.newChatMembersProgress !== NewChatMembersProgress.Closed ? (
     RightColumnContent.AddingMembers
   ) : tabState.isChatInfoShown && tabState.messageLists.length ? (
