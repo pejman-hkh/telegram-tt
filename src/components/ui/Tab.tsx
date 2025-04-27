@@ -57,7 +57,7 @@ const Tab: FC<OwnProps> = ({
   contextRootElementSelector,
 }) => {
   if (!showIcons) {
-    icon = undefined
+    icon = undefined;
   }
 
   // eslint-disable-next-line no-null/no-null
@@ -147,10 +147,13 @@ const Tab: FC<OwnProps> = ({
       onContextMenu={handleContextMenu}
       ref={tabRef}
     >
-      {icon && <span className="Tab_icon">
-        {icon}
-        {Boolean(badgeCount) && <span className={buildClassName('badge', isBadgeActive && classNames.badgeActive)}>{badgeCount}</span>}
-      </span>}
+      {icon && (
+        <span className="Tab_icon">
+          {icon}
+          {Boolean(badgeCount)
+            && <span className={buildClassName('badge', isBadgeActive && classNames.badgeActive)}>{badgeCount}</span>}
+        </span>
+      )}
 
       <span className="Tab_inner">
         {typeof title === 'string' ? renderText(title) : title}
