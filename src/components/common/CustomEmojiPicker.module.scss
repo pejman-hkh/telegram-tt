@@ -1,8 +1,10 @@
 .root {
   --emoji-size: 2.25rem;
 
-  height: 100%;
-  max-height: calc(100 * var(--vh));
+  &.full-h {
+    height: 100%;
+    max-height: calc(100 * var(--vh));
+  }
 
   :global(.symbol-set-container) {
     --symbol-set-gap-size: 0.625rem;
