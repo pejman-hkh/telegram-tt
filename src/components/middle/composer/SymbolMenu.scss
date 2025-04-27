@@ -5,6 +5,14 @@
     position: absolute;
     z-index: var(--z-symbol-menu-modal);
   }
+  
+  .StickerMain {
+    padding: 0 0.5rem;
+  } 
+  
+  .not-shown {
+    display: none;
+  }
 
   &.mobile-menu {
     position: fixed;
