@@ -18,6 +18,19 @@ export function preparePastedHtml(html: string) {
   }
   fragment.innerHTML = html.replace(/\u00a0/g, ' ').replace(STYLE_TAG_REGEX, ''); // Strip &nbsp and styles
 
+  ['div'].forEach((tag) => {
+    const elements = Array.from(fragment.querySelectorAll(tag));
+    elements.forEach((el) => {
+      const parent = el.parentNode;
+      if (parent) {
+        while (el.firstChild) {
+          parent.insertBefore(el.firstChild, el);
+        }
+        parent.removeChild(el);
+      }
+    });
+  });
+
   const textContents = fragment.querySelectorAll<HTMLDivElement>('.text-content');
   if (textContents.length) {
     fragment = textContents[textContents.length - 1]; // Replace with the last copied message
@@ -53,7 +66,7 @@ export function preparePastedHtml(html: string) {
         break;
     }
   });
-
+  // console.log(fragment.innerHTML);
   return fragment.innerHTML.trimEnd();
 }
 
