@@ -63,7 +63,18 @@ const SymbolMenuFooter: FC<OwnProps> = ({
   }
 
   const handleSearchOpen = useLastCallback(() => {
-    onSearchOpen(activeTab === SymbolMenuTabs.Stickers ? 'stickers' : 'gifs');
+    let className = '';
+    if (activeTab === SymbolMenuTabs.Emoji) {
+      className = 'EmojiPicker-main';
+    } else if (activeTab === SymbolMenuTabs.Stickers) {
+      className = 'StickerPicker-module__main';
+    } else if (activeTab === SymbolMenuTabs.GIFs) {
+      className = 'GifWrapper';
+    }
+    const input = document.querySelector(`.${className} input`)! as HTMLInputElement;
+    input.focus();
+
+    // onSearchOpen(activeTab === SymbolMenuTabs.Stickers ? 'stickers' : 'gifs');
   });
 
   function stopPropagation(event: any) {
@@ -72,7 +83,7 @@ const SymbolMenuFooter: FC<OwnProps> = ({
 
   return (
     <div className="SymbolMenu-footer" onClick={stopPropagation} dir={lang.isRtl ? 'rtl' : undefined}>
-      {activeTab !== SymbolMenuTabs.Emoji && activeTab !== SymbolMenuTabs.CustomEmoji && canSearch && (
+      {activeTab !== SymbolMenuTabs.CustomEmoji && canSearch && (
         <Button
           className="symbol-search-button"
           ariaLabel={activeTab === SymbolMenuTabs.Stickers ? 'Search Stickers' : 'Search GIFs'}
@@ -86,7 +97,6 @@ const SymbolMenuFooter: FC<OwnProps> = ({
       )}
 
       {canSendPlainText && renderTabButton(SymbolMenuTabs.Emoji)}
-      {canSendPlainText && renderTabButton(SymbolMenuTabs.CustomEmoji)}
       {!isAttachmentModal && renderTabButton(SymbolMenuTabs.Stickers)}
       {!isAttachmentModal && renderTabButton(SymbolMenuTabs.GIFs)}
 
