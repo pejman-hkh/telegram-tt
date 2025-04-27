@@ -2,7 +2,7 @@ import type { FC } from '../../lib/teact/teact';
 import React, {
   memo, useEffect, useMemo, useRef,
 } from '../../lib/teact/teact';
-import { getGlobal, withGlobal } from '../../global';
+import { withGlobal } from '../../global';
 
 import type {
   ApiAvailableReaction, ApiReaction, ApiReactionWithPaid, ApiSticker, ApiStickerSet,
@@ -10,19 +10,15 @@ import type {
 import type { StickerSetOrReactionsSetOrRecent } from '../../types';
 
 import {
-  FAVORITE_SYMBOL_SET_ID,
   POPULAR_SYMBOL_SET_ID,
   RECENT_SYMBOL_SET_ID,
   SLIDE_TRANSITION_DURATION,
-  STICKER_PICKER_MAX_SHARED_COVERS,
-  STICKER_SIZE_PICKER_HEADER,
   TOP_SYMBOL_SET_ID,
 } from '../../config';
 import { isSameReaction } from '../../global/helpers';
 import {
   selectCanPlayAnimatedEmojis,
   selectChatFullInfo,
-  selectIsAlwaysHighPriorityEmoji,
   selectIsChatWithSelf,
   selectIsCurrentUserPremium,
 } from '../../global/selectors';
@@ -41,11 +37,8 @@ import useScrolledState from '../../hooks/useScrolledState';
 import useAsyncRendering from '../right/hooks/useAsyncRendering';
 import { useStickerPickerObservers } from './hooks/useStickerPickerObservers';
 
-import StickerSetCover from '../middle/composer/StickerSetCover';
-import Button from '../ui/Button';
 import Loading from '../ui/Loading';
-import Icon from './icons/Icon';
-import StickerButton from './StickerButton';
+import CustomEmojiCover from './CustomEmojiCover';
 import StickerSet from './StickerSet';
 
 import pickerStyles from '../middle/composer/StickerPicker.module.scss';
@@ -94,15 +87,9 @@ type StateProps = {
 const HEADER_BUTTON_WIDTH = 2.5 * REM; // px (including margin)
 
 const DEFAULT_ID_PREFIX = 'custom-emoji-set';
-const TOP_REACTIONS_COUNT = 16;
-const RECENT_REACTIONS_COUNT = 32;
-const RECENT_DEFAULT_STATUS_COUNT = 7;
-const FADED_BUTTON_SET_IDS = new Set([RECENT_SYMBOL_SET_ID, FAVORITE_SYMBOL_SET_ID, POPULAR_SYMBOL_SET_ID]);
-const STICKER_SET_IDS_WITH_COVER = new Set([
-  RECENT_SYMBOL_SET_ID,
-  FAVORITE_SYMBOL_SET_ID,
-  POPULAR_SYMBOL_SET_ID,
-]);
+export const TOP_REACTIONS_COUNT = 16;
+export const RECENT_REACTIONS_COUNT = 32;
+export const RECENT_DEFAULT_STATUS_COUNT = 7;
 
 const CustomEmojiPicker: FC<OwnProps & StateProps> = ({
   className,
@@ -143,10 +130,6 @@ const CustomEmojiPicker: FC<OwnProps & StateProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   // eslint-disable-next-line no-null/no-null
   const headerRef = useRef<HTMLDivElement>(null);
-  // eslint-disable-next-line no-null/no-null
-  const sharedCanvasRef = useRef<HTMLCanvasElement>(null);
-  // eslint-disable-next-line no-null/no-null
-  const sharedCanvasHqRef = useRef<HTMLCanvasElement>(null);
 
   const { isMobile } = useAppLayout();
   const {
@@ -314,69 +297,6 @@ const CustomEmojiPicker: FC<OwnProps & StateProps> = ({
     onCustomEmojiSelect(emoji);
   });
 
-  function renderCover(stickerSet: StickerSetOrReactionsSetOrRecent, index: number) {
-    const firstSticker = stickerSet.stickers?.[0];
-    const buttonClassName = buildClassName(
-      pickerStyles.stickerCover,
-      index === activeSetIndex && styles.activated,
-    );
-
-    const withSharedCanvas = index < STICKER_PICKER_MAX_SHARED_COVERS;
-    const isHq = selectIsAlwaysHighPriorityEmoji(getGlobal(), stickerSet as ApiStickerSet);
-
-    if (stickerSet.id === TOP_SYMBOL_SET_ID) {
-      return undefined;
-    }
-
-    if (STICKER_SET_IDS_WITH_COVER.has(stickerSet.id) || stickerSet.hasThumbnail || !firstSticker) {
-      const isRecent = stickerSet.id === RECENT_SYMBOL_SET_ID || stickerSet.id === POPULAR_SYMBOL_SET_ID;
-      const isFaded = FADED_BUTTON_SET_IDS.has(stickerSet.id);
-      return (
-        <Button
-          key={stickerSet.id}
-          className={buttonClassName}
-          ariaLabel={stickerSet.title}
-          round
-          faded={isFaded}
-          color="translucent"
-          // eslint-disable-next-line react/jsx-no-bind
-          onClick={() => selectStickerSet(isRecent ? 0 : index)}
-        >
-          {isRecent ? (
-            <Icon name="recent" />
-          ) : (
-            <StickerSetCover
-              stickerSet={stickerSet as ApiStickerSet}
-              noPlay={!canAnimate || !canLoadAndPlay}
-              forcePlayback
-              observeIntersection={observeIntersectionForCovers}
-              sharedCanvasRef={withSharedCanvas ? (isHq ? sharedCanvasHqRef : sharedCanvasRef) : undefined}
-            />
-          )}
-        </Button>
-      );
-    }
-
-    return (
-      <StickerButton
-        key={stickerSet.id}
-        sticker={firstSticker}
-        size={STICKER_SIZE_PICKER_HEADER}
-        title={stickerSet.title}
-        className={buttonClassName}
-        noPlay={!canAnimate || !canLoadAndPlay}
-        observeIntersection={observeIntersectionForCovers}
-        noContextMenu
-        isCurrentUserPremium
-        sharedCanvasRef={withSharedCanvas ? (isHq ? sharedCanvasHqRef : sharedCanvasRef) : undefined}
-        withTranslucentThumb={isTranslucent}
-        onClick={selectStickerSet}
-        clickArg={index}
-        forcePlayback
-      />
-    );
-  }
-
   const fullClassName = buildClassName('StickerPicker', styles.root, className);
 
   if (!shouldRenderContent) {
@@ -411,9 +331,15 @@ const CustomEmojiPicker: FC<OwnProps & StateProps> = ({
         className={headerClassName}
       >
         <div className="shared-canvas-container">
-          <canvas ref={sharedCanvasRef} className="shared-canvas" />
-          <canvas ref={sharedCanvasHqRef} className="shared-canvas" />
-          {allSets.map(renderCover)}
+          <CustomEmojiCover
+            activeSetIndex={activeSetIndex}
+            selectStickerSet={selectStickerSet}
+            canAnimate={canAnimate}
+            canLoadAndPlay={canLoadAndPlay}
+            observeIntersectionForCovers={observeIntersectionForCovers}
+            isTranslucent={isTranslucent}
+            allSets={allSets}
+          />
         </div>
       </div>
       <div
