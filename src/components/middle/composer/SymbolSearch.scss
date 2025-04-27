@@ -1,0 +1,103 @@
+@use "../../../styles/mixins";
+
+.SymbolSearchResult {
+  height: calc(100% - 2.4rem);
+  overflow-y: auto;
+
+  &.no-header {
+    height: calc(100% - 3.8rem);
+  }
+}
+
+.SymbolSearch {
+  .not-shown {
+    display: none;
+  }
+
+  .Spinner {
+    --spinner-size: 1.5rem;
+  }
+
+  .cursor {
+    cursor: var(--custom-cursor, pointer);
+  }
+
+  .search-icons {
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    align-items: center;
+    justify-content: space-between;
+    white-space: nowrap;
+
+    svg {
+      transform: scale(1.2);
+    }
+
+    button {
+      flex-shrink: 0;
+      border: 0;
+      background: transparent;
+      cursor: var(--custom-cursor, pointer);
+      display: flex;
+      align-items: center;
+
+      &:focus {
+        outline: none !important;
+      }
+
+      &.active {
+        background-color: #c9d9c2;
+        border-radius: 1rem;
+      }
+    }
+  }
+
+  i {
+    color: #a1ac93;
+    font-size: 1.6rem;
+    margin-left: 0.75rem;
+    margin-right: 0.5rem;
+  }
+
+  input {
+    background-color: transparent;
+    border: 0;
+    width: 8rem;
+
+    &:focus {
+      outline: none;
+    }
+
+    &::placeholder {
+      color: #99aa8f;
+      opacity: 1;
+    }
+
+    &.expanded {
+      width: 100%;
+    }
+  }
+
+  display: flex;
+  align-items: center;
+  padding: 0.5rem;
+  border-radius: 0.75rem;
+  background: linear-gradient(to right, #e4ecdc, #dce7d8, #d2e2d3);
+  margin-bottom: 0.5rem;
+}
+
+.SymbolSearchResult {
+  .sticker-set-header {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  Button.primary {
+    background-color: #4e8ee5;
+
+    &.isadded {
+      background-color: #d6e5d4;
+    }
+  }
+}
