@@ -26,8 +26,9 @@ export default function parseHtmlAsFormattedText(
   html: string, withMarkdownLinks = false, skipMarkdown = false,
 ): ApiFormattedText {
   const fragment = document.createElement('div');
-  fragment.innerHTML = skipMarkdown ? html
+  const markdownedHtml = skipMarkdown ? html
     : withMarkdownLinks ? parseMarkdown(parseMarkdownLinks(html)) : parseMarkdown(html);
+  fragment.innerHTML = markdownedHtml.replace(/\u200b+/g, '');
   fixImageContent(fragment);
   const text = fragment.innerText.trim().replace(/\u200b+/g, '');
   const trimShift = fragment.innerText.indexOf(text[0]);
@@ -77,7 +78,29 @@ export function fixImageContent(fragment: HTMLDivElement) {
   });
 }
 
-function parseMarkdown(html: string) {
+function convertPreToMarkdown(html: string) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+  const preTags = doc.querySelectorAll('pre');
+  preTags.forEach((pre) => {
+    let codeContent = pre.textContent || pre.innerText;
+    if (codeContent.trim().startsWith('```')) {
+      codeContent = codeContent.slice(3, -3);
+    }
+    let markdown = `\`\`\`${codeContent}\`\`\``;
+    if (pre.dataset.language) {
+      markdown = `\`\`\`${pre.dataset.language}\n${codeContent}\`\`\``;
+    }
+
+    const fragment = document.createDocumentFragment();
+    fragment.textContent = markdown;
+    pre.replaceWith(fragment);
+  });
+
+  return doc.body.innerHTML;
+}
+
+export function parseMarkdown(html: string, preToMarkdown = true) {
   let parsedHtml = html.slice(0);
 
   // Strip redundant nbsp's
@@ -134,6 +157,10 @@ function parseMarkdown(html: string) {
   //   /(?!<(code|pre)[^<]*|<\/)[|]{2}([^|\n]+)[|]{2}(?![^<]*<\/(code|pre)>)/g,
   //   `<span data-entity-type="${ApiMessageEntityTypes.Spoiler}">$2</span>`,
   // );
+
+  if (preToMarkdown) {
+    parsedHtml = convertPreToMarkdown(parsedHtml);
+  }
 
   parsedHtml = markdowToHtml(parsedHtml);
 
