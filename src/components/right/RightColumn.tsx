@@ -341,10 +341,10 @@ const RightColumn: FC<OwnProps & StateProps> = ({
         return <MessageStatistics chatId={chatId!} isActive={isOpen && isActive} />;
       case RightColumnContent.StoryStatistics:
         return <StoryStatistics chatId={chatId!} isActive={isOpen && isActive} />;
-      case RightColumnContent.StickerSearch:
-        return <StickerSearch onClose={close} isActive={isOpen && isActive} />;
-      case RightColumnContent.GifSearch:
-        return <GifSearch onClose={close} isActive={isOpen && isActive} />;
+      // case RightColumnContent.StickerSearch:
+      //   return <StickerSearch onClose={close} isActive={isOpen && isActive} />;
+      // case RightColumnContent.GifSearch:
+      //   return <GifSearch onClose={close} isActive={isOpen && isActive} />;
       case RightColumnContent.PollResults:
         return <PollResults onClose={close} isActive={isOpen && isActive} />;
       case RightColumnContent.CreateTopic:
