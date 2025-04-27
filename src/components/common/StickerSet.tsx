@@ -17,6 +17,7 @@ import {
   FAVORITE_SYMBOL_SET_ID,
   POPULAR_SYMBOL_SET_ID,
   RECENT_SYMBOL_SET_ID,
+  SEARCH_SYMBOL_SET_ID,
   STICKER_SIZE_PICKER,
 } from '../../config';
 import { getReactionKey } from '../../global/helpers';
@@ -239,7 +240,7 @@ const StickerSet: FC<OwnProps> = ({
 
   const isInstalled = stickerSet.installedDate && !stickerSet.isArchived;
 
-  const canCut = !isInstalled && stickerSet.id !== RECENT_SYMBOL_SET_ID
+  const canCut = !isInstalled && stickerSet.id !== RECENT_SYMBOL_SET_ID && stickerSet.id !== SEARCH_SYMBOL_SET_ID
     && stickerSet.id !== POPULAR_SYMBOL_SET_ID && stickerSet.id !== EFFECT_EMOJIS_SET_ID
     && stickerSet.id !== EFFECT_STICKERS_SET_ID && !isChatEmojiSet && !isChatStickerSet;
 
