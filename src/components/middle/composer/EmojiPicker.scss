@@ -9,7 +9,11 @@
   &-main {
     height: calc(100% - 3rem);
     overflow-y: auto;
-    padding: 0.5rem 0.75rem;
+    padding: 0 0.75rem;
+
+    &.searching {
+      padding: 0.5rem 0.75rem;
+    }
 
     @include mixins.adapt-padding-to-scrollbar(0.75rem);
 
@@ -18,17 +22,34 @@
 
       @include mixins.adapt-padding-to-scrollbar(0.25rem);
     }
+
+    &.searching {
+      height: calc(100% - 0.5rem);
+    }
   }
 
   &-header {
     height: 3rem;
     display: flex;
     align-items: center;
-    justify-content: space-around;
+    // justify-content: space-around;
 
     &.with-top-border {
       /* stylelint-disable-next-line plugin/whole-pixel */
       box-shadow: inset 0 -0.5px 0 0 var(--color-borders-alternate);
+    }
+
+    .categories {
+      width: 2.4rem;
+      overflow: hidden;
+      display: flex;
+      transition: width 0.3s ease;
+
+      &.expanded {
+        width: 14rem;
+        background-color: #e0e7d0;
+        border-radius: 1.25rem;
+      }
     }
 
     @media (max-width: 600px) {
