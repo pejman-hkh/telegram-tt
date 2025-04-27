@@ -15,7 +15,7 @@ type NodeType = {
 };
 
 // We can use settings for each tag in here for custom HTML, for example custom tag, attributes, ...
-const MapTokens: { [key: string]: string } = {
+export const MapTokens: { [key: string]: string } = {
   '*': 'b',
   _: 'i',
   '~': 'del',
@@ -288,13 +288,15 @@ export class ParseMarkdown {
         if (node?.type === 'code') {
           const text = this.text.slice(node?.start, node?.end);
           node.text = text;
+          node.attrs = { class: 'text-entity-code' };
         } else if (node?.type === 'pre') {
           const text = this.text.slice(node?.start, node?.end);
-
+          node.attrs = { class: '', 'data-language': '' };
+          node.attrs.class = 'code-block text-entity-pre';
           if (text?.match(/\n/)) {
             const splitPreCode = text?.split('\n');
             if (splitPreCode?.[0]?.trim()) {
-              node.attrs = { 'data-language': splitPreCode?.[0]?.trim() || '' };
+              node.attrs['data-language'] = splitPreCode?.[0]?.trim() || '';
             }
             splitPreCode?.shift();
             node.text = splitPreCode?.join('\n');
@@ -310,10 +312,10 @@ export class ParseMarkdown {
         }
 
         if (node?.type === 'blockquote') {
-          node.attrs = { 'data-entity-type': ApiMessageEntityTypes.Blockquote };
+          node.attrs = { 'data-entity-type': ApiMessageEntityTypes.Blockquote, class: 'blockquote' };
         } else if (node?.type === 'spoiler') {
-          node.type = 'span';
-          node.attrs = { 'data-entity-type': ApiMessageEntityTypes.Spoiler };
+          node.type = 'spoiler';
+          node.attrs = { 'data-entity-type': ApiMessageEntityTypes.Spoiler, class: 'spoiler' };
         } else if (node?.type === 'a') {
           const href = node?.attrs?.href;
           if (href && href.match(/@/)) {
@@ -336,7 +338,7 @@ export class ParseMarkdown {
           html += '\n';
         } else if (content === '') {
           // eslint-disable-next-line no-unsafe-optional-chaining
-          html += node?.token && (node?.token + node?.token);
+          html += node?.token ? (node?.token + node?.token) : '';
         } else {
           html += `${String(`<${node?.type}`) + this.makeAttrsText(node?.attrs)}>${content}</${node?.type}>`;
         }
