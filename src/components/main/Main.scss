@@ -4,7 +4,7 @@
   overflow: hidden;
 
   #Folders_wrapper {
-    width: 6rem;
+    width: 5rem;
 
     @media (max-width: 926px) {
       display: none;
@@ -30,10 +30,19 @@
     }
 
     .TabList {
+      .Tab--active {
+        background: var(--color-interactive-element-hover);
+      }
+
+      .Tab--active .platform {
+        opacity: 0 !important;
+      }
+
       .Tab {
         width: 100%;
         position: relative;
-        margin-bottom: 1rem;
+        padding: 0.5rem 0;
+        border-radius: 0;
 
         .Tab_icon .badge {
           position: absolute;
@@ -56,6 +65,9 @@
       background-color: #212121;
       justify-content: flex-start;
       display: flex;
+      width: 5.1rem;
+      overflow-x: hidden;
+      padding: 0;
     }
 
     background-color: #212121;
