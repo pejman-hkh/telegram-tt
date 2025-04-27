@@ -2,6 +2,7 @@ import type { FC } from '../../../lib/teact/teact';
 import React, {
   memo, useEffect, useMemo,
   useRef,
+  useState,
 } from '../../../lib/teact/teact';
 import { getActions, withGlobal } from '../../../global';
 
@@ -14,13 +15,16 @@ import {
   EFFECT_STICKERS_SET_ID,
   FAVORITE_SYMBOL_SET_ID,
   RECENT_SYMBOL_SET_ID,
+  SEARCH_SYMBOL_SET_ID,
   SLIDE_TRANSITION_DURATION,
   STICKER_PICKER_MAX_SHARED_COVERS,
   STICKER_SIZE_PICKER_HEADER,
 } from '../../../config';
 import { isUserId } from '../../../global/helpers';
 import {
-  selectChat, selectChatFullInfo, selectIsChatWithSelf, selectIsCurrentUserPremium, selectShouldLoopStickers,
+  selectChat, selectChatFullInfo,
+  selectIsChatWithSelf, selectIsCurrentUserPremium, selectShouldLoopStickers,
+  selectTabState,
 } from '../../../global/selectors';
 import animateHorizontalScroll from '../../../util/animateHorizontalScroll';
 import buildClassName from '../../../util/buildClassName';
@@ -41,9 +45,11 @@ import Avatar from '../../common/Avatar';
 import Icon from '../../common/icons/Icon';
 import StickerButton from '../../common/StickerButton';
 import StickerSet from '../../common/StickerSet';
+import StickerSearch from '../../right/StickerSearch';
 import Button from '../../ui/Button';
 import Loading from '../../ui/Loading';
 import StickerSetCover from './StickerSetCover';
+import SymbolSearch, { SYMBOL_SEARCH_IS_DEFAULT, SYMBOL_SEARCH_IS_SELECING_ICONS, SYMBOL_SEARCH_IS_TYPING } from './SymbolSearch';
 
 import styles from './StickerPicker.module.scss';
 
@@ -75,6 +81,7 @@ type StateProps = {
   canAnimate?: boolean;
   isSavedMessages?: boolean;
   isCurrentUserPremium?: boolean;
+  isModalOpen: boolean;
 };
 
 const HEADER_BUTTON_WIDTH = 2.5 * REM; // px (including margin)
@@ -101,6 +108,7 @@ const StickerPicker: FC<OwnProps & StateProps> = ({
   idPrefix,
   onStickerSelect,
   isForEffects,
+  isModalOpen,
 }) => {
   const {
     loadRecentStickers,
@@ -108,6 +116,7 @@ const StickerPicker: FC<OwnProps & StateProps> = ({
     unfaveSticker,
     faveSticker,
     removeRecentSticker,
+    setStickerSearchQuery,
   } = getActions();
 
   // eslint-disable-next-line no-null/no-null
@@ -115,8 +124,17 @@ const StickerPicker: FC<OwnProps & StateProps> = ({
   // eslint-disable-next-line no-null/no-null
   const headerRef = useRef<HTMLDivElement>(null);
   // eslint-disable-next-line no-null/no-null
+  const searchIconsRef = useRef<HTMLDivElement>(null);
+  // eslint-disable-next-line no-null/no-null
   const sharedCanvasRef = useRef<HTMLCanvasElement>(null);
 
+  const [searchIcons, setSearchIcons] = useState<ApiStickerSet[]>([]);
+  const [allStickers, setAllStickers] = useState<ApiStickerSet[]>([]);
+  const [isSearching, setIsSearching] = useState<number>(SYMBOL_SEARCH_IS_DEFAULT);
+  const [resetSearching, setResetSearching] = useState(false);
+  const [stickerIndex, setStickerIndex] = useState(-1);
+  // const [isIconSearching, setIsIconSearching] = useState<boolean>(false);
+  // const [isTyping, setIsTyping] = useState(false);
   const {
     handleScroll: handleContentScroll,
     isAtBeginning: shouldHideTopBorder,
@@ -134,9 +152,32 @@ const StickerPicker: FC<OwnProps & StateProps> = ({
     selectStickerSet,
   } = useStickerPickerObservers(containerRef, headerRef, prefix, isHidden);
 
+  const selectStickerSetWithRestSearch = useLastCallback((index: number) => {
+    setIsSearching(SYMBOL_SEARCH_IS_DEFAULT);
+    setResetSearching(!resetSearching);
+    setStickerIndex(index);
+  });
+
+  useEffect(() => {
+    if (stickerIndex === -1) {
+      return;
+    }
+    selectStickerSet(stickerIndex);
+  }, [stickerIndex, selectStickerSet, resetSearching]);
+
+
   const lang = useOldLang();
 
   const areAddedLoaded = Boolean(addedSetIds);
+
+  useEffect(() => {
+    setAllStickers((prev) => {
+      return [...prev, ...Object.values(stickerSetsById)];
+    });
+    return () => {
+      setAllStickers([]);
+    };
+  }, [stickerSetsById]);
 
   const allSets = useMemo(() => {
     if (isForEffects && effectStickers) {
@@ -226,7 +267,7 @@ const StickerPicker: FC<OwnProps & StateProps> = ({
 
   const canRenderContents = useAsyncRendering([], SLIDE_TRANSITION_DURATION);
   const shouldRenderContents = areAddedLoaded && canRenderContents
-  && !noPopulatedSets && (canSendStickers || isForEffects);
+    && !noPopulatedSets && (canSendStickers || isForEffects);
 
   useHorizontalScroll(headerRef, !shouldRenderContents || !headerRef.current);
 
@@ -245,6 +286,44 @@ const StickerPicker: FC<OwnProps & StateProps> = ({
 
     animateHorizontalScroll(header, newLeft);
   }, [areAddedLoaded, activeSetIndex]);
+
+  const handleOnSearch = useLastCallback((text: string[], searching) => {
+    setIsSearching(searching);
+    // setIsIconSearching(false);
+    const query = text[0];
+    setStickerSearchQuery({ query });
+  });
+
+  const handleOnSelect = useLastCallback((value) => {
+    if (searchIconsRef?.current) {
+      searchIconsRef.current.scrollTop = 0;
+    }
+
+    const result: ApiSticker[] = [];
+    allStickers.forEach((item) => {
+      item?.stickers?.forEach((sticker) => {
+        if (value?.emojies.some((emoji: string) => emoji === sticker.emoji && !sticker.isCustomEmoji)) {
+          result.push(sticker);
+        }
+      });
+    });
+
+    // console.log('found', result, result?.length, allStickers);
+    // setIsIconSearching(true);
+    setIsSearching(SYMBOL_SEARCH_IS_SELECING_ICONS);
+    setSearchIcons([{
+      id: SEARCH_SYMBOL_SET_ID,
+      accessHash: '0',
+      title: lang('SearchSticker'),
+      stickers: result,
+      count: result.length,
+      shortName: '',
+    }]);
+  });
+
+  // const handleOnChange = useLastCallback((searching) => {
+  //   setIsTyping(searching);
+  // });
 
   const handleStickerSelect = useLastCallback((sticker: ApiSticker, isSilent?: boolean, shouldSchedule?: boolean) => {
     onStickerSelect(sticker, isSilent, shouldSchedule, true);
@@ -270,6 +349,22 @@ const StickerPicker: FC<OwnProps & StateProps> = ({
 
   if (!chat) return undefined;
 
+  const fullClassName = buildClassName(styles.root, className);
+
+  if (!shouldRenderContents) {
+    return (
+      <div className={fullClassName}>
+        {!canSendStickers && !isForEffects ? (
+          <div className={styles.pickerDisabled}>{lang('ErrorSendRestrictedStickersAll')}</div>
+        ) : noPopulatedSets ? (
+          <div className={styles.pickerDisabled}>{lang('NoStickers')}</div>
+        ) : (
+          <Loading />
+        )}
+      </div>
+    );
+  }
+
   function renderCover(stickerSet: StickerSetOrReactionsSetOrRecent, index: number) {
     const firstSticker = stickerSet.stickers?.[0];
     const buttonClassName = buildClassName(styles.stickerCover, index === activeSetIndex && styles.activated);
@@ -290,7 +385,7 @@ const StickerPicker: FC<OwnProps & StateProps> = ({
           faded={stickerSet.id === RECENT_SYMBOL_SET_ID || stickerSet.id === FAVORITE_SYMBOL_SET_ID}
           color="translucent"
           // eslint-disable-next-line react/jsx-no-bind
-          onClick={() => selectStickerSet(index)}
+          onClick={() => selectStickerSetWithRestSearch(index)}
         >
           {stickerSet.id === RECENT_SYMBOL_SET_ID ? (
             <Icon name="recent" />
@@ -331,38 +426,23 @@ const StickerPicker: FC<OwnProps & StateProps> = ({
     }
   }
 
-  const fullClassName = buildClassName(styles.root, className);
-
-  if (!shouldRenderContents) {
-    return (
-      <div className={fullClassName}>
-        {!canSendStickers && !isForEffects ? (
-          <div className={styles.pickerDisabled}>{lang('ErrorSendRestrictedStickersAll')}</div>
-        ) : noPopulatedSets ? (
-          <div className={styles.pickerDisabled}>{lang('NoStickers')}</div>
-        ) : (
-          <Loading />
-        )}
-      </div>
-    );
-  }
-
   const headerClassName = buildClassName(
     styles.header,
     'no-scrollbar',
     !shouldHideTopBorder && styles.headerWithBorder,
+    isSearching === SYMBOL_SEARCH_IS_TYPING && 'not-shown',
   );
 
   return (
     <div className={fullClassName}>
-      { !isForEffects && (
+      {!isForEffects && (
         <div ref={headerRef} className={headerClassName}>
           <div className="shared-canvas-container">
             <canvas ref={sharedCanvasRef} className="shared-canvas" />
             {allSets.map(renderCover)}
           </div>
         </div>
-      ) }
+      )}
       <div
         ref={containerRef}
         onMouseMove={handleMouseMove}
@@ -370,36 +450,83 @@ const StickerPicker: FC<OwnProps & StateProps> = ({
         className={
           buildClassName(
             styles.main,
-            IS_TOUCH_ENV ? 'no-scrollbar' : 'custom-scroll',
-            !isForEffects && styles.hasHeader,
+            (IS_TOUCH_ENV || isSearching) ? 'no-scrollbar' : 'custom-scroll',
+            (isSearching !== SYMBOL_SEARCH_IS_TYPING && !isForEffects) && styles.hasHeader,
           )
         }
       >
-        {allSets.map((stickerSet, i) => (
-          <StickerSet
-            key={stickerSet.id}
-            stickerSet={stickerSet}
-            loadAndPlay={Boolean(canAnimate && loadAndPlay)}
-            noContextMenus={noContextMenus}
-            index={i}
-            idPrefix={prefix}
-            observeIntersection={observeIntersectionForSet}
-            observeIntersectionForPlayingItems={observeIntersectionForPlayingItems}
-            observeIntersectionForShowingItems={observeIntersectionForShowingItems}
-            isNearActive={activeSetIndex >= i - 1 && activeSetIndex <= i + 1}
-            favoriteStickers={favoriteStickers}
-            isSavedMessages={isSavedMessages}
-            isCurrentUserPremium={isCurrentUserPremium}
-            isTranslucent={isTranslucent}
-            isChatStickerSet={stickerSet.id === chatStickerSetId}
-            onStickerSelect={handleStickerSelect}
-            onStickerUnfave={handleStickerUnfave}
-            onStickerFave={handleStickerFave}
-            onStickerRemoveRecent={handleRemoveRecentSticker}
-            forcePlayback
-            shouldHideHeader={stickerSet.id === EFFECT_EMOJIS_SET_ID}
-          />
-        ))}
+        <SymbolSearch
+          onSearch={handleOnSearch}
+          placeholder="SearchSticker"
+          onSelect={handleOnSelect}
+          onReset={resetSearching}
+        />
+
+        {isSearching === SYMBOL_SEARCH_IS_SELECING_ICONS && (
+          <div className={buildClassName('SymbolSearchResult no-header')}>
+            <div ref={searchIconsRef} className="StickerSearch custom-scroll">
+              {searchIcons.map((stickerSet, i) => (
+                <StickerSet
+                  key={stickerSet.id}
+                  stickerSet={stickerSet}
+                  loadAndPlay={Boolean(canAnimate && loadAndPlay)}
+                  noContextMenus={noContextMenus}
+                  index={i}
+                  idPrefix={prefix}
+                  observeIntersection={observeIntersectionForSet}
+                  observeIntersectionForPlayingItems={observeIntersectionForPlayingItems}
+                  observeIntersectionForShowingItems={observeIntersectionForShowingItems}
+                  isNearActive={activeSetIndex >= i - 1 && activeSetIndex <= i + 1}
+                  favoriteStickers={favoriteStickers}
+                  isSavedMessages={isSavedMessages}
+                  isCurrentUserPremium={isCurrentUserPremium}
+                  isTranslucent={isTranslucent}
+                  isChatStickerSet={stickerSet.id === chatStickerSetId}
+                  onStickerSelect={handleStickerSelect}
+                  onStickerUnfave={handleStickerUnfave}
+                  onStickerFave={handleStickerFave}
+                  onStickerRemoveRecent={handleRemoveRecentSticker}
+                  forcePlayback
+                  shouldHideHeader={stickerSet.id === EFFECT_EMOJIS_SET_ID}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {isSearching === SYMBOL_SEARCH_IS_TYPING && (
+          <div className={buildClassName('SymbolSearchResult no-header')}>
+            <StickerSearch />
+          </div>
+        )}
+
+        <div className={isSearching ? 'not-shown' : ''}>
+          {allSets.map((stickerSet, i) => (
+            <StickerSet
+              key={stickerSet.id}
+              stickerSet={stickerSet}
+              loadAndPlay={Boolean(canAnimate && loadAndPlay)}
+              noContextMenus={noContextMenus}
+              index={i}
+              idPrefix={prefix}
+              observeIntersection={observeIntersectionForSet}
+              observeIntersectionForPlayingItems={observeIntersectionForPlayingItems}
+              observeIntersectionForShowingItems={observeIntersectionForShowingItems}
+              isNearActive={activeSetIndex >= i - 1 && activeSetIndex <= i + 1}
+              favoriteStickers={favoriteStickers}
+              isSavedMessages={isSavedMessages}
+              isCurrentUserPremium={isCurrentUserPremium}
+              isTranslucent={isTranslucent}
+              isChatStickerSet={stickerSet.id === chatStickerSetId}
+              onStickerSelect={handleStickerSelect}
+              onStickerUnfave={handleStickerUnfave}
+              onStickerFave={handleStickerFave}
+              onStickerRemoveRecent={handleRemoveRecentSticker}
+              forcePlayback
+              shouldHideHeader={stickerSet.id === EFFECT_EMOJIS_SET_ID}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -431,6 +558,7 @@ export default memo(withGlobal<OwnProps>(
       isSavedMessages,
       isCurrentUserPremium: selectIsCurrentUserPremium(global),
       chatStickerSetId,
+      isModalOpen: Boolean(selectTabState(global).openedStickerSetShortName),
     };
   },
 )(StickerPicker));
