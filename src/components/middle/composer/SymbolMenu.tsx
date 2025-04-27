@@ -201,12 +201,6 @@ const SymbolMenu: FC<OwnProps & StateProps> = ({
           <EmojiPicker
             className="picker-tab"
             onEmojiSelect={handleEmojiSelect}
-          />
-        );
-      case SymbolMenuTabs.CustomEmoji:
-        return (
-          <CustomEmojiPicker
-            className="picker-tab"
             isHidden={!isOpen || !isActive}
             idPrefix={idPrefix}
             loadAndPlay={isOpen && (isActive || isFrom)}
