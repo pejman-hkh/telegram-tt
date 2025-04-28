@@ -1053,6 +1053,14 @@
   padding-bottom: 1.6rem;
 }
 
+.code-block.has-language::after {
+  content: attr(data-language);
+  position: absolute;
+  right: 1rem;
+  top: .5rem;
+  font-weight: bold;
+}
+
 .text-entity-code,
 .text-entity-pre,
 .code-block,
