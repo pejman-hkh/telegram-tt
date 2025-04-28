@@ -130,11 +130,13 @@ const TextEditor: FC<OwnProps | any> = ({
         let html = selectedElement.current!.innerHTML.slice(size, -size);
         if (token === '```') {
           const split = html.split('\n');
-          if (selectedElement.current) {
-            selectedElement.current.dataset.language = split[0].trim();
+          if (split?.length > 1) {
+            if (selectedElement.current) {
+              selectedElement.current.dataset.language = split[0].trim();
+            }
+            split.shift();
+            html = split.join('\n');
           }
-          split.shift();
-          html = split.join('\n');
         }
         node.innerHTML = html;
       }
