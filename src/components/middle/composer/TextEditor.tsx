@@ -131,11 +131,16 @@ const TextEditor: FC<OwnProps | any> = ({
         if (token === '```') {
           const split = html.split('\n');
           if (split?.length > 1) {
+            selectedElement.current!.classList.add('has-language');
             if (selectedElement.current) {
               selectedElement.current.dataset.language = split[0].trim();
             }
             split.shift();
             html = split.join('\n');
+
+            // const language = document.createElement('span');
+            // language.innerHTML = selectedElement?.current?.dataset?.language || '';
+            // selectedElement?.current!.append(language);
           }
         }
         node.innerHTML = html;
@@ -209,6 +214,7 @@ const TextEditor: FC<OwnProps | any> = ({
         if (token === '```') {
           if (selectedElement?.current?.dataset?.language) {
             start = `${selectedElement?.current?.dataset?.language}\n`;
+            selectedElement.current.classList.remove('has-language');
             selectedElement.current.setAttribute('data-language1', selectedElement?.current?.dataset?.language);
             delete selectedElement?.current?.dataset?.language;
           }

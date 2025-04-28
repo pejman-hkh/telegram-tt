@@ -297,6 +297,7 @@ export class ParseMarkdown {
             const splitPreCode = text?.split('\n');
             if (splitPreCode?.[0]?.trim()) {
               node.attrs['data-language'] = splitPreCode?.[0]?.trim() || '';
+              node.attrs.class += ' has-language';
             }
             splitPreCode?.shift();
             node.text = splitPreCode?.join('\n');
