@@ -127,7 +127,16 @@ const TextEditor: FC<OwnProps | any> = ({
         replaced = true;
       } else {
         // console.log('inner html of node changed in reset tag', node);
-        node.innerHTML = selectedElement.current!.innerHTML.slice(size, -size);
+        let html = selectedElement.current!.innerHTML.slice(size, -size);
+        if (token === '```') {
+          const split = html.split('\n');
+          if (selectedElement.current) {
+            selectedElement.current.dataset.language = split[0].trim();
+          }
+          split.shift();
+          html = split.join('\n');
+        }
+        node.innerHTML = html;
       }
       onUpdate(editorRef.current?.innerHTML || '');
       const afterLen = node.textContent?.length || 0;
@@ -194,14 +203,14 @@ const TextEditor: FC<OwnProps | any> = ({
       if (!target.innerHTML.startsWith(token)) {
         const pos = getCaretPosition(target);
         selectedElement.current = target;
-        const start = '';
-        // if (token === '```') {
-        //   if (selectedElement?.current?.dataset?.language) {
-        //     start = `${selectedElement?.current?.dataset?.language}\n`;
-        //     selectedElement.current.setAttribute('data-language1', selectedElement?.current?.dataset?.language);
-        //     delete selectedElement?.current?.dataset?.language;
-        //   }
-        // }
+        let start = '';
+        if (token === '```') {
+          if (selectedElement?.current?.dataset?.language) {
+            start = `${selectedElement?.current?.dataset?.language}\n`;
+            selectedElement.current.setAttribute('data-language1', selectedElement?.current?.dataset?.language);
+            delete selectedElement?.current?.dataset?.language;
+          }
+        }
         target.innerHTML = token + start + target.innerHTML + token;
         onUpdate(editorRef.current?.innerHTML || '');
         const newPosition = pos + token.length;
