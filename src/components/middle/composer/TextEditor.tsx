@@ -65,16 +65,16 @@ function placeCaretAfterNode(node: Node, space = '\u200B') {
 }
 
 function placeCaretBeforeNode(node: Node) {
-  console.log('place caret before node', node);
+  // console.log('place caret before node', node);
   const range = document.createRange();
   const selection = window.getSelection();
   if (!node.parentNode) return;
-  if (!(node.parentNode.previousSibling instanceof Node)
-    && node.parentNode.previousSibling?.textContent?.startsWith('\u200B')) {
-    console.log('set caret before node');
+  if (node.parentNode.previousSibling?.textContent?.startsWith('\u200B')
+    && !node.parentNode.previousSibling?.textContent?.endsWith('\n')) {
+    // console.log('set caret before node', node.parentNode.previousSibling);
     range.setStart(node.parentNode.previousSibling, 0);
   } else {
-    console.log('create zero before node');
+    // console.log('create zero before node');
     const spacer = document.createTextNode('\u200B'); // zero-width space
     (node.parentNode as HTMLElement).before(spacer);
     range.setStartAfter(spacer);
