@@ -173,12 +173,25 @@ const TextEditor: FC<OwnProps | any> = ({
     const selection = window.getSelection();
     const range = selection?.getRangeAt(0);
     const current = range?.startContainer;
+
+    // if (e.key === 'Backspace') {
+    //   console.log('tttttttttttttttttt', current, current?.previousSibling);
+    //   if (current?.previousSibling instanceof HTMLElement
+    //     && (current?.previousSibling as HTMLElement).tagName === 'PRE') {
+    //     editableElement(current?.previousSibling);
+    //     setCaretPosition(current?.previousSibling, current?.previousSibling?.textContent?.length || 0);
+    //     return;
+    //   }
+    // }
+
     if (current?.parentElement && current?.parentElement !== editorRef?.current) {
       const pos = getCaretPosition(current.parentElement);
       if (current && selectedElement.current) {
         if (pos === selectedElement.current?.textContent?.length) {
-          placeCaretAfterNode(current);
-          resetSelected();
+          if (e.key !== 'Backspace' && e.key !== 'ArrowLeft') {
+            placeCaretAfterNode(current);
+            resetSelected();
+          }
         }
       }
     }
@@ -336,12 +349,62 @@ const TextEditor: FC<OwnProps | any> = ({
   };
 
   const editableHandler = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    // if ((e?.ctrlKey || e?.metaKey) && e.code === 'KeyZ') {
+    //   return;
+    // }
+
+    // Let delete tags
+    if (e.key === 'Backspace') {
+      const selection = window.getSelection();
+      const range = selection?.getRangeAt(0);
+      const current = range?.startContainer;
+      const node = current?.parentElement
+      const tagTokens = TagTokens;
+      tagTokens.pre = '```';
+
+      if (node instanceof HTMLElement
+        && Object.keys(tagTokens).includes((node as HTMLElement).tagName.toLocaleLowerCase())) {
+        const element = node as HTMLElement;
+        const tagName = element.tagName.toLocaleLowerCase();
+        const token = tagTokens[tagName];
+
+        editableElement(node);
+        const range1 = selection?.getRangeAt(0);
+        const current1 = range1?.startContainer;
+        setCaretPosition(current1?.parentElement as Node, (current1?.parentElement?.textContent?.length || 0));
+        if (!current1?.parentElement?.textContent?.startsWith(token)
+          || !current1?.parentElement?.textContent?.endsWith(token)) {
+          resetSelected();
+        }
+        return;
+      }
+    }
+
     if (e.key.startsWith('Arrow') || e.key === 'Shift' /* || e.key === 'Enter'  || selectedElement.current */) {
       return;
     }
 
     const selection = window.getSelection();
+    // const range = selection?.getRangeAt(0);
+    // const current = range?.startContainer;
+    // console.log(current);
 
+    // if (current?.textContent?.match(/(`|__|\*\*|~~|\|\|)/)) {
+    //   const last = current.textContent.slice(-1);
+    //   const tagName = MapTokens[last];
+    //   if (current?.parentElement?.tagName.toLocaleLowerCase() !== tagName) {
+    //     const pos = getCaretPosition(editorRef?.current!);
+    //     const beforContent = current.textContent.slice(0, -2);
+    //     const fragment = document.createDocumentFragment();
+    //     fragment.append(beforContent);
+    //     const el = document.createElement(tagName);
+    //     el.innerHTML = beforContent;
+    //     fragment.append(el);
+    //     current.parentElement?.replaceChild(fragment, current);
+    //     setCaretPosition(editorRef?.current!, pos);
+    //     return;
+    //   }
+    // }
     if (selection && selection.rangeCount > 0 && !selection.isCollapsed) {
       // resetSelected();
       return;
@@ -357,9 +420,9 @@ const TextEditor: FC<OwnProps | any> = ({
     if (selectedElement.current) {
       placingCaret();
     }
+    const selection = window.getSelection();
 
     if (e.key.startsWith('Arrow')) {
-      const selection = window.getSelection();
       if (!selection || selection.rangeCount === 0) {
         return;
       }
