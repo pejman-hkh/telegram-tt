@@ -70,7 +70,7 @@ function placeCaretBeforeNode(node: Node, space = ' ') {
   const selection = window.getSelection();
   if (!node.parentNode) return;
   if (node.parentNode.previousSibling?.textContent?.startsWith(space)
-    && node.parentNode.previousSibling?.textContent?.endsWith('\n')) {
+    && !node.parentNode.previousSibling?.textContent?.endsWith('\n')) {
     range.setStartAfter(node.parentNode.previousSibling);
   } else {
     // console.log('create zero before node');
