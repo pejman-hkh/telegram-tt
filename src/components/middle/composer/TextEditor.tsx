@@ -38,7 +38,7 @@ export const TagTokens: { [key: string]: string } = {
   spoiler: '||',
 };
 
-function placeCaretAfterNode(node: Node, space = '\u200B') {
+function placeCaretAfterNode(node: Node, space = ' ') {
   // console.log('place caret after node', node);
   const range = document.createRange();
   const selection = window.getSelection();
@@ -64,18 +64,16 @@ function placeCaretAfterNode(node: Node, space = '\u200B') {
   selection?.addRange(range);
 }
 
-function placeCaretBeforeNode(node: Node) {
+function placeCaretBeforeNode(node: Node, space = ' ') {
   // console.log('place caret before node', node);
   const range = document.createRange();
   const selection = window.getSelection();
   if (!node.parentNode) return;
-  if (node.parentNode.previousSibling?.textContent?.startsWith('\u200B')
-    && !node.parentNode.previousSibling?.textContent?.endsWith('\n')) {
-    // console.log('set caret before node', node.parentNode.previousSibling);
-    range.setStart(node.parentNode.previousSibling, 0);
+  if (node.parentNode.previousSibling?.textContent?.startsWith(space)) {
+    range.setStartAfter(node.parentNode.previousSibling);
   } else {
     // console.log('create zero before node');
-    const spacer = document.createTextNode('\u200B'); // zero-width space
+    const spacer = document.createTextNode(space); // zero-width space
     (node.parentNode as HTMLElement).before(spacer);
     range.setStartAfter(spacer);
   }
@@ -358,7 +356,7 @@ const TextEditor: FC<OwnProps | any> = ({
       const selection = window.getSelection();
       const range = selection?.getRangeAt(0);
       const current = range?.startContainer;
-      const node = current?.parentElement
+      const node = current?.parentElement;
       const tagTokens = TagTokens;
       tagTokens.pre = '```';
 
