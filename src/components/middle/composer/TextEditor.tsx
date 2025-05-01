@@ -363,16 +363,25 @@ const TextEditor: FC<OwnProps | any> = ({
 
       if (node instanceof HTMLElement
         && Object.keys(tagTokens).includes((node as HTMLElement).tagName.toLocaleLowerCase())
-        && range?.startOffset === node?.textContent?.length
+
       ) {
         const element = node as HTMLElement;
         const tagName = element.tagName.toLocaleLowerCase();
         const token = tagTokens[tagName];
 
-        editableElement(node);
+        let pos = getCaretPosition(current?.parentElement!);
+        const selected = selectedElement?.current;
+        // eslint-disable-next-line no-null/no-null
+        if (selected === null) {
+          editableElement(node);
+        }
         const range1 = selection?.getRangeAt(0);
         const current1 = range1?.startContainer;
-        setCaretPosition(current1?.parentElement as Node, (current1?.parentElement?.textContent?.length || 0));
+        // eslint-disable-next-line no-null/no-null
+        if (selected === null) {
+          pos = (current1?.parentElement?.textContent?.length || 0);
+        }
+        setCaretPosition(current1?.parentElement as Node, pos);
         if (!current1?.parentElement?.textContent?.startsWith(token)
           || !current1?.parentElement?.textContent?.endsWith(token)) {
           resetSelected();
