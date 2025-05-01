@@ -362,7 +362,9 @@ const TextEditor: FC<OwnProps | any> = ({
       tagTokens.pre = '```';
 
       if (node instanceof HTMLElement
-        && Object.keys(tagTokens).includes((node as HTMLElement).tagName.toLocaleLowerCase())) {
+        && Object.keys(tagTokens).includes((node as HTMLElement).tagName.toLocaleLowerCase())
+        && range?.startOffset === node?.textContent?.length
+      ) {
         const element = node as HTMLElement;
         const tagName = element.tagName.toLocaleLowerCase();
         const token = tagTokens[tagName];
@@ -581,8 +583,9 @@ const TextEditor: FC<OwnProps | any> = ({
           caretPosition = history[posIndex]?.caretPosition;
         }
       }
-
-      setCaretPosition(editorRef?.current!, caretPosition);
+      if (caretPosition > 0) {
+        setCaretPosition(editorRef?.current!, caretPosition);
+      }
       setIndex(newIndex);
     }
   };
